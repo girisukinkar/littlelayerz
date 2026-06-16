@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Products } from './pages/Products';
 import { Orders } from './pages/Orders';
-import { Database, ShoppingBag } from 'lucide-react';
+import { Quotations } from './pages/Quotations';
+import { Database, ShoppingBag, FileText } from 'lucide-react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,12 +15,12 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'quotes'>('products');
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col">
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col print:bg-white print:text-black">
       {/* Navigation Navbar */}
-      <nav className="border-b border-neutral-900 bg-neutral-950/80 sticky top-0 z-40 backdrop-blur-md px-4 py-3 md:px-8">
+      <nav className="border-b border-neutral-900 bg-neutral-950/80 sticky top-0 z-40 backdrop-blur-md px-4 py-3 md:px-8 print:hidden">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow shadow-purple-500/50">
@@ -53,13 +54,25 @@ function AppContent() {
               <ShoppingBag className="h-3.5 w-3.5" />
               Orders
             </button>
+            <button
+              onClick={() => setActiveTab('quotes')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                activeTab === 'quotes'
+                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Quotations
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* Active Dashboard */}
-      <main className="flex-grow">
-        {activeTab === 'products' ? <Products /> : <Orders />}
+      <main className="flex-grow print:p-0">
+        {activeTab === 'products' && <Products />}
+        {activeTab === 'orders' && <Orders />}
+        {activeTab === 'quotes' && <Quotations />}
       </main>
     </div>
   );
