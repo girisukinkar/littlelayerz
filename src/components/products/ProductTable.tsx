@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Product } from '../../types/product';
 import { calculateProductMetrics } from '../../utils/productCalculations';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
 
 interface ProductTableProps {
   products: Product[];
@@ -57,7 +57,20 @@ export const ProductTable: React.FC<ProductTableProps> = ({
               >
                 {/* Product Name */}
                 <td className="px-4 py-3.5 font-medium text-neutral-200">
-                  {product.name}
+                  <div className="flex items-center gap-3">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name} 
+                        className="h-8 w-8 rounded-lg object-cover border border-neutral-800 bg-neutral-900 shrink-0"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-lg border border-neutral-800 bg-neutral-900/50 flex items-center justify-center text-neutral-600 shrink-0">
+                        <ImageIcon className="h-4 w-4" />
+                      </div>
+                    )}
+                    <span>{product.name}</span>
+                  </div>
                 </td>
                 
                 {/* Print Time */}

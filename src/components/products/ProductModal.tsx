@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Product } from '../../types/product';
 import { isValidPrintTime, parsePrintTimeToHours } from '../../utils/printTimeParser';
 import { X, Calculator, Info } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const [filamentWeight, setFilamentWeight] = useState('');
   const [costPerKg, setCostPerKg] = useState('');
   const [sellingPrice, setSellingPrice] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Pre-fill form if editing
@@ -33,12 +36,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       setFilamentWeight(product.filament_weight.toString());
       setCostPerKg(product.cost_per_kg.toString());
       setSellingPrice(product.selling_price.toString());
+      setImageUrl(product.image_url || '');
     } else {
       setName('');
       setPrintTime('');
       setFilamentWeight('');
       setCostPerKg('');
       setSellingPrice('');
+      setImageUrl('');
     }
     setErrorMsg('');
   }, [product, isOpen]);
@@ -97,11 +102,47 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         filament_weight: rawWeight,
         cost_per_kg: rawCostPerKg,
         selling_price: rawSellingPrice,
+        image_url: imageUrl || undefined,
       });
       onClose();
     } catch (err: any) {
       setErrorMsg(err.message || 'An error occurred while saving the product.');
     }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setErrorMsg('');
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      setImageUrl(publicUrlData.publicUrl);
+    } catch (err: any) {
+      console.error('Upload failed:', err);
+      setErrorMsg(err.message || 'Failed to upload product image.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleClearImage = () => {
+    setImageUrl('');
   };
 
   return (
@@ -207,6 +248,38 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     required
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-400">Product Image (Optional)</label>
+                {imageUrl ? (
+                  <div className="mt-1.5 flex items-center gap-3">
+                    <img 
+                      src={imageUrl} 
+                      alt="Preview" 
+                      className="h-10 w-10 rounded-lg object-cover border border-neutral-800 bg-neutral-900"
+                    />
+                    <span className="text-xs text-neutral-500 truncate max-w-[140px]">{imageUrl.split('/').pop()}</span>
+                    <button
+                      type="button"
+                      onClick={handleClearImage}
+                      className="text-xs text-red-400 hover:text-red-300 font-semibold"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      disabled={isUploading}
+                      className="block w-full text-xs text-neutral-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-neutral-800 file:bg-neutral-900 file:text-neutral-300 file:font-semibold hover:file:bg-neutral-800 file:cursor-pointer focus:outline-none"
+                    />
+                    {isUploading && <span className="text-xs text-neutral-400 animate-pulse shrink-0">Uploading...</span>}
+                  </div>
+                )}
               </div>
             </div>
 

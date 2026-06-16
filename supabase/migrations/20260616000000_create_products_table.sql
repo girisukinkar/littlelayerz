@@ -5,5 +5,6 @@ create table products (
   filament_weight numeric not null,
   cost_per_kg numeric not null,
   selling_price numeric not null,
+  image_url text,
   created_at timestamptz default now()
 );
