@@ -5,7 +5,7 @@ import type { Order, OrderStatus } from '../types/order';
 import { OrderStats } from '../components/orders/OrderStats';
 import { OrderTable } from '../components/orders/OrderTable';
 import { OrderModal } from '../components/orders/OrderModal';
-import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Plus, Search, RefreshCw, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 const filterOptions: ('All' | OrderStatus)[] = ['All', 'Pending', 'Printing', 'Ready', 'Delivered', 'Cancelled'];
 
@@ -31,7 +31,8 @@ export const Orders: React.FC = () => {
   const {
     orders,
     isLoading,
-    isUsingLocal,
+    isError,
+    error,
     addOrder,
     updateOrder,
     deleteOrder,
@@ -134,14 +135,16 @@ export const Orders: React.FC = () => {
           </button>
         </header>
 
-        {/* Database Status Alert Banner */}
-        {isUsingLocal && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-400 backdrop-blur-md">
-            <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+
+
+        {/* Database Error Alert */}
+        {isError && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-400 backdrop-blur-md">
+            <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold">Local Storage Demo Mode Active</span>
+              <span className="font-semibold">Database Connection Error</span>
               <p className="mt-0.5 text-neutral-400 text-xs">
-                Running locally. Configure your VITE_SUPABASE_ANON_KEY in your .env file to enable syncing with your Supabase database.
+                {(error as any)?.message || 'Failed to fetch orders from Supabase. Make sure your database tables are created.'}
               </p>
             </div>
           </div>

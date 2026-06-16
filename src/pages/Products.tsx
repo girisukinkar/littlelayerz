@@ -4,13 +4,14 @@ import type { Product } from '../types/product';
 import { ProductStats } from '../components/products/ProductStats';
 import { ProductTable } from '../components/products/ProductTable';
 import { ProductModal } from '../components/products/ProductModal';
-import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Plus, Search, RefreshCw, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 export const Products: React.FC = () => {
   const {
     products,
     isLoading,
-    isUsingLocal,
+    isError,
+    error,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -103,15 +104,16 @@ export const Products: React.FC = () => {
           </button>
         </header>
 
-        {/* Database Status Alert Banner */}
-        {isUsingLocal && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-400 backdrop-blur-md">
-            <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+
+
+        {/* Database Error Alert */}
+        {isError && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-400 backdrop-blur-md">
+            <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold">Local Storage Demo Mode Active</span>
+              <span className="font-semibold">Database Connection Error</span>
               <p className="mt-0.5 text-neutral-400 text-xs">
-                We couldn't connect to your Supabase project (either because the Anon Key is not set or there's a connection issue). 
-                Any additions, updates, or deletions are being saved to your local browser storage. Configure your actual <code className="bg-neutral-900 px-1 py-0.5 rounded border border-neutral-800 text-[10px] text-amber-300">VITE_SUPABASE_ANON_KEY</code> in the <code className="bg-neutral-900 px-1 py-0.5 rounded border border-neutral-800 text-[10px] text-amber-300">.env</code> file to enable database sync.
+                {(error as any)?.message || 'Failed to fetch products from Supabase. Make sure your database tables are created.'}
               </p>
             </div>
           </div>
