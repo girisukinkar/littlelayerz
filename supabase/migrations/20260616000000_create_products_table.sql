@@ -6,5 +6,6 @@ create table products (
   cost_per_kg numeric not null,
   selling_price numeric not null,
   image_url text,
+  electricity_rate numeric,
   created_at timestamptz default now()
 );

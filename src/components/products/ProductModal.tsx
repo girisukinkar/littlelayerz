@@ -25,6 +25,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const [costPerKg, setCostPerKg] = useState('');
   const [sellingPrice, setSellingPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [electricityRate, setElectricityRate] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -37,6 +38,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       setCostPerKg(product.cost_per_kg.toString());
       setSellingPrice(product.selling_price.toString());
       setImageUrl(product.image_url || '');
+      setElectricityRate(
+        product.electricity_rate !== undefined && product.electricity_rate !== null
+          ? product.electricity_rate.toString()
+          : ''
+      );
     } else {
       setName('');
       setPrintTime('');
@@ -44,6 +50,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       setCostPerKg('');
       setSellingPrice('');
       setImageUrl('');
+      setElectricityRate('');
     }
     setErrorMsg('');
   }, [product, isOpen]);
@@ -57,7 +64,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const isTimeValid = isValidPrintTime(printTime);
 
   const decimalHours = isTimeValid ? parsePrintTimeToHours(printTime) : 0;
-  const electricityCost = isTimeValid ? decimalHours * 0.08 * 7.1 : 0;
+  const rawElectricityRate = electricityRate.trim() === '' ? 7.1 : (parseFloat(electricityRate) || 7.1);
+  const electricityCost = isTimeValid ? decimalHours * 0.08 * rawElectricityRate : 0;
   const maxPiecesPerDay = decimalHours > 0 ? Math.floor(24 / decimalHours) : 0;
 
   const hasFilament = rawWeight > 0 && rawCostPerKg > 0;
@@ -93,7 +101,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       setErrorMsg('Selling price must be greater than 0.');
       return;
     }
-
     try {
       await onSubmit({
         ...(product?.id ? { id: product.id } : {}),
@@ -102,7 +109,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         filament_weight: rawWeight,
         cost_per_kg: rawCostPerKg,
         selling_price: rawSellingPrice,
-        image_url: imageUrl || undefined,
+        image_url: imageUrl.trim() === '' ? null : imageUrl,
+        electricity_rate: electricityRate.trim() === '' ? null : parseFloat(electricityRate),
       });
       onClose();
     } catch (err: any) {
@@ -250,6 +258,21 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400">Elec. Rate (₹/kWh) (Optional)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={electricityRate}
+                    onChange={(e) => setElectricityRate(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-neutral-100 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm"
+                    placeholder="e.g., 7.1 (default)"
+                  />
+                </div>
+                <div></div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-neutral-400">Product Image (Optional)</label>
                 {imageUrl ? (
@@ -330,7 +353,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               </div>
 
               <div className="mt-4 border-t border-neutral-900 pt-3 text-[10px] text-neutral-500">
-                Electricity calculated at ₹7.1/kWh rate for an 80W power consumption profile.
+                Electricity calculated at ₹{rawElectricityRate.toFixed(1)}/kWh rate for an 80W power consumption profile.
               </div>
             </div>
           </div>

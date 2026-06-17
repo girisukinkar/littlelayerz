@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom';
 import { Products } from './pages/Products';
 import { Orders } from './pages/Orders';
 import { Quotations } from './pages/Quotations';
@@ -15,8 +15,6 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'quotes'>('products');
-
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col print:bg-white print:text-black">
       {/* Navigation Navbar */}
@@ -32,47 +30,52 @@ function AppContent() {
           </div>
 
           <div className="flex gap-1.5">
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                activeTab === 'products'
-                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400'
+            <NavLink
+              to="/products"
+              className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                isActive
+                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400 font-bold'
                   : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
               }`}
             >
               <Database className="h-3.5 w-3.5" />
               Products
-            </button>
-            <button
-              onClick={() => setActiveTab('orders')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                activeTab === 'orders'
-                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400'
+            </NavLink>
+            <NavLink
+              to="/orders"
+              className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                isActive
+                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400 font-bold'
                   : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
               }`}
             >
               <ShoppingBag className="h-3.5 w-3.5" />
               Orders
-            </button>
-            <button
-              onClick={() => setActiveTab('quotes')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                activeTab === 'quotes'
-                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400'
+            </NavLink>
+            <NavLink
+              to="/quotations"
+              className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                isActive
+                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400 font-bold'
                   : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
               }`}
             >
               <FileText className="h-3.5 w-3.5" />
               Quotations
-            </button>
+            </NavLink>
           </div>
         </div>
       </nav>
 
       <main className="flex-grow print:p-0">
-        {activeTab === 'products' && <Products />}
-        {activeTab === 'orders' && <Orders />}
-        {activeTab === 'quotes' && <Quotations />}
+        <Routes>
+          <Route path="/" element={<Navigate to="/products" replace />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/quotations" element={<Quotations />} />
+          <Route path="/quotations/:id" element={<Quotations />} />
+          <Route path="*" element={<Navigate to="/products" replace />} />
+        </Routes>
       </main>
     </div>
   );
@@ -81,7 +84,9 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

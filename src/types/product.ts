@@ -5,7 +5,8 @@ export interface Product {
   filament_weight: number; // in grams
   cost_per_kg: number;
   selling_price: number;
-  image_url?: string;
+  image_url?: string | null;
+  electricity_rate?: number | null;
   created_at?: string;
 }
 
