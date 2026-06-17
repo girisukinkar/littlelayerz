@@ -16,7 +16,8 @@ import {
   Search, 
   RefreshCw, 
   CheckCircle2, 
-  ShieldAlert 
+  ShieldAlert,
+  ChevronDown
 } from 'lucide-react';
 import type { SavedQuotation } from '../types/quotation';
 
@@ -49,11 +50,10 @@ export const Quotations: React.FC = () => {
   const [lastLoadedId, setLastLoadedId] = useState<string | null>(null);
   const [quoteRef, setQuoteRef] = useState(generateQuoteRef);
   const [clientName, setClientName] = useState('');
-  const [items, setItems] = useState<QuoteItem[]>([
-    { id: crypto.randomUUID(), productId: '', quantity: 1, customPrice: 0 }
-  ]);
-
+  const [items, setItems] = useState<QuoteItem[]>([]);
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -88,30 +88,29 @@ export const Quotations: React.FC = () => {
         setSelectedQuoteId(null);
         setQuoteRef(generateQuoteRef());
         setClientName('');
-        setItems([{ id: crypto.randomUUID(), productId: '', quantity: 1, customPrice: 0 }]);
+        setItems([]);
         setLastLoadedId(null);
       }
     }
   }, [id, quotations, isHistoryLoading, lastLoadedId, navigate, selectedQuoteId]);
 
-  const handleAddItem = () => {
-    setItems([...items, { id: crypto.randomUUID(), productId: '', quantity: 1, customPrice: 0 }]);
+  const handleToggleProduct = (prodId: string, defaultPrice: number) => {
+    const exists = items.some(item => item.productId === prodId);
+    if (exists) {
+      setItems(items.filter(item => item.productId !== prodId));
+    } else {
+      setItems([...items, { id: crypto.randomUUID(), productId: prodId, quantity: 1, customPrice: defaultPrice }]);
+    }
   };
 
   const handleRemoveItem = (id: string) => {
     setItems(items.filter(item => item.id !== id));
   };
 
-  const handleItemChange = (id: string, field: 'productId' | 'quantity' | 'customPrice', value: any) => {
+  const handleItemChange = (id: string, field: 'quantity' | 'customPrice', value: any) => {
     setItems(items.map(item => {
       if (item.id === id) {
-        const updated = { ...item, [field]: value };
-        // Auto-populate default selling price when product changes
-        if (field === 'productId') {
-          const matchedProd = products.find(p => p.id === value);
-          updated.customPrice = matchedProd ? matchedProd.selling_price : 0;
-        }
-        return updated;
+        return { ...item, [field]: value };
       }
       return item;
     }));
@@ -188,7 +187,7 @@ export const Quotations: React.FC = () => {
       setSelectedQuoteId(null);
       setQuoteRef(generateQuoteRef());
       setClientName('');
-      setItems([{ id: crypto.randomUUID(), productId: '', quantity: 1, customPrice: 0 }]);
+      setItems([]);
       setLastLoadedId(null);
       triggerAlert('success', 'Created a new blank quotation.');
     } else {
@@ -220,6 +219,8 @@ export const Quotations: React.FC = () => {
     q.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     q.quote_ref.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const selectedCount = items.length;
 
   return (
     <div className="min-h-screen bg-neutral-950 px-4 py-8 md:px-8 text-neutral-100 selection:bg-purple-500/30 selection:text-purple-200 print:bg-white print:text-black print:min-h-0 print:p-0">
@@ -322,80 +323,132 @@ export const Quotations: React.FC = () => {
                 />
               </div>
 
+              {/* Custom Multi-select Checkbox Dropdown */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-neutral-400 mb-1.5">Select Products to Quote</label>
+                <button
+                  type="button"
+                  onClick={() => setShowProductDropdown(!showProductDropdown)}
+                  className="flex items-center justify-between w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-left text-neutral-200 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm hover:bg-neutral-900/50 transition-colors animate-fade-in"
+                >
+                  <span className="truncate">
+                    {selectedCount === 0 
+                      ? "Choose products..." 
+                      : `${selectedCount} product${selectedCount > 1 ? 's' : ''} selected`}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-neutral-500 shrink-0" />
+                </button>
+
+                {showProductDropdown && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowProductDropdown(false)} 
+                    />
+                    <div className="absolute z-20 mt-1.5 w-full bg-neutral-950 border border-neutral-800 rounded-xl shadow-2xl max-h-60 overflow-y-auto p-2 space-y-1 backdrop-blur-md">
+                      {products.map((product) => {
+                        const isChecked = product.id ? items.some(item => item.productId === product.id) : false;
+                        return (
+                          <div 
+                            key={product.id}
+                            onClick={() => product.id && handleToggleProduct(product.id, product.selling_price)}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-900 cursor-pointer transition-all ${
+                              isChecked ? 'bg-purple-500/5' : ''
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              readOnly
+                              className="h-4 w-4 rounded border-neutral-800 bg-neutral-900 text-purple-600 focus:ring-purple-500 focus:ring-offset-neutral-950 focus:ring-2 cursor-pointer"
+                            />
+                            <div className="flex-1 flex justify-between items-center text-xs">
+                              <span className="font-semibold text-neutral-200">{product.name}</span>
+                              <span className="text-neutral-500 font-mono">₹{product.selling_price}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
               {/* Items List */}
-              <div className="space-y-3">
-                <div className="grid grid-cols-12 gap-3 text-xs font-semibold text-neutral-400">
+              <div className="space-y-3 pt-2">
+                <div className="grid grid-cols-12 gap-3 text-xs font-semibold text-neutral-400 border-b border-neutral-900 pb-2">
                   <span className="col-span-6">Product</span>
                   <span className="col-span-2 text-center">Qty</span>
                   <span className="col-span-3 text-center">Unit Price (₹)</span>
                   <span className="col-span-1"></span>
                 </div>
                 
-                {items.map((item) => (
-                  <div key={item.id} className="grid grid-cols-12 gap-3 items-center">
-                    {/* Product Selection */}
-                    <div className="col-span-6">
-                      <select
-                        value={item.productId}
-                        onChange={(e) => handleItemChange(item.id, 'productId', e.target.value)}
-                        className="block w-full rounded-lg border border-neutral-800 bg-neutral-900 px-2 py-2 text-neutral-100 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-xs"
-                      >
-                        <option value="">Select a product...</option>
-                        {products.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} (₹{p.selling_price})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Quantity Input */}
-                    <div className="col-span-2">
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                        className="block w-full rounded-lg border border-neutral-800 bg-neutral-900 px-2 py-2 text-neutral-100 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-xs text-center font-mono"
-                      />
-                    </div>
-
-                    {/* Custom Price Input */}
-                    <div className="col-span-3">
-                      <input
-                        type="number"
-                        min="0"
-                        step="any"
-                        value={item.customPrice || ''}
-                        placeholder="Price"
-                        onChange={(e) => handleItemChange(item.id, 'customPrice', parseFloat(e.target.value) || 0)}
-                        className="block w-full rounded-lg border border-neutral-800 bg-neutral-900 px-2 py-2 text-neutral-100 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-xs text-center font-mono"
-                      />
-                    </div>
-
-                    {/* Delete Action */}
-                    <div className="col-span-1 flex justify-center">
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem(item.id)}
-                        disabled={items.length === 1}
-                        className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-800 hover:text-red-400 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                {items.length === 0 ? (
+                  <div className="text-center py-8 border border-dashed border-neutral-800 rounded-xl text-neutral-500 text-xs">
+                    No products selected. Click "Select Products to Quote" above to add items.
                   </div>
-                ))}
-              </div>
+                ) : (
+                  items.map((item) => {
+                    const matchedProduct = products.find(p => p.id === item.productId);
+                    return (
+                      <div key={item.id} className="grid grid-cols-12 gap-3 items-center">
+                        {/* Product Info */}
+                        <div className="col-span-6 flex items-center gap-2">
+                          {matchedProduct?.image_url ? (
+                            <img 
+                              src={matchedProduct.image_url} 
+                              alt={matchedProduct.name} 
+                              className="h-7 w-7 rounded object-cover border border-neutral-800 bg-neutral-900 shrink-0"
+                            />
+                          ) : (
+                            <div className="h-7 w-7 rounded border border-neutral-800 bg-neutral-900/50 flex items-center justify-center text-neutral-600 shrink-0">
+                              <ImageIcon className="h-3.5 w-3.5" />
+                            </div>
+                          )}
+                          <span className="text-xs font-medium text-neutral-200 truncate">
+                            {matchedProduct?.name || "Loading..."}
+                          </span>
+                        </div>
 
-              <button
-                type="button"
-                onClick={handleAddItem}
-                className="flex items-center justify-center gap-1.5 w-full rounded-lg border border-dashed border-neutral-800 py-2.5 text-xs font-semibold text-neutral-400 hover:border-neutral-700 hover:text-neutral-200 hover:bg-neutral-900/30 transition-all"
-              >
-                <Plus className="h-4 w-4" />
-                Add Item Row
-              </button>
+                        {/* Quantity Input */}
+                        <div className="col-span-2">
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                            className="block w-full rounded-lg border border-neutral-800 bg-neutral-900 px-2 py-1.5 text-neutral-100 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-xs text-center font-mono"
+                          />
+                        </div>
+
+                        {/* Custom Price Input */}
+                        <div className="col-span-3">
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={item.customPrice || ''}
+                            placeholder="Price"
+                            onChange={(e) => handleItemChange(item.id, 'customPrice', parseFloat(e.target.value) || 0)}
+                            className="block w-full rounded-lg border border-neutral-800 bg-neutral-900 px-2 py-1.5 text-neutral-100 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-xs text-center font-mono"
+                          />
+                        </div>
+
+                        {/* Delete Action */}
+                        <div className="col-span-1 flex justify-center">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-900 hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
 
             {/* Right Column: Live Quotation Preview Sheet */}
@@ -498,8 +551,8 @@ export const Quotations: React.FC = () => {
                           </td>
                           <td className="py-3.5 font-medium">{line?.product.name}</td>
                           <td className="py-3.5 text-right font-mono">{line?.quantity}</td>
-                          <td className="py-3.5 text-right font-mono">₹{line?.unitPrice}</td>
-                          <td className="py-3.5 text-right font-mono font-semibold">₹{line?.lineTotal}</td>
+                          <td className="py-3.5 text-right font-mono font-semibold">₹{line?.unitPrice}</td>
+                          <td className="py-3.5 text-right font-mono font-bold">₹{line?.lineTotal}</td>
                         </tr>
                       ))}
                     </tbody>
