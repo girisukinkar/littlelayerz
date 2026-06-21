@@ -3,6 +3,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useQuotations } from '../hooks/useQuotations';
 import { useParams, useNavigate } from 'react-router-dom';
 import { parsePrintTimeToHours, formatHoursToPrintTime } from '../utils/printTimeParser';
+import { calculateProductMetrics } from '../utils/productCalculations';
 import { 
   Plus, 
   Trash2, 
@@ -53,6 +54,7 @@ export const Quotations: React.FC = () => {
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showInternalProfits, setShowInternalProfits] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -121,10 +123,6 @@ export const Quotations: React.FC = () => {
   };
 
   // Calculations
-  let totalWeight = 0;
-  let totalHours = 0;
-  let totalAmount = 0;
-
   const quoteLines = items.map(item => {
     const matchedProduct = products.find(p => p.id === item.productId);
     if (!matchedProduct) return null;
@@ -134,9 +132,11 @@ export const Quotations: React.FC = () => {
     const hours = decimalHours * item.quantity;
     const lineTotal = item.customPrice * item.quantity;
 
-    totalWeight += weight;
-    totalHours += hours;
-    totalAmount += lineTotal;
+    const productMetrics = calculateProductMetrics(matchedProduct);
+    const unitCost = productMetrics.totalCost;
+    const unitProfit = item.customPrice - unitCost;
+    const lineCost = unitCost * item.quantity;
+    const lineProfit = unitProfit * item.quantity;
 
     return {
       product: matchedProduct,
@@ -144,9 +144,19 @@ export const Quotations: React.FC = () => {
       unitPrice: item.customPrice,
       weight,
       hours,
-      lineTotal
+      lineTotal,
+      unitCost,
+      unitProfit,
+      lineCost,
+      lineProfit
     };
-  }).filter(Boolean);
+  }).filter((line): line is Exclude<typeof line, null> => line !== null);
+
+  const totalWeight = quoteLines.reduce((sum, line) => sum + line.weight, 0);
+  const totalHours = quoteLines.reduce((sum, line) => sum + line.hours, 0);
+  const totalAmount = quoteLines.reduce((sum, line) => sum + line.lineTotal, 0);
+  const totalCost = quoteLines.reduce((sum, line) => sum + line.lineCost, 0);
+  const totalProfit = quoteLines.reduce((sum, line) => sum + line.lineProfit, 0);
 
   const formattedPrintTime = formatHoursToPrintTime(totalHours);
 
@@ -306,10 +316,25 @@ export const Quotations: React.FC = () => {
             
             {/* Left Column: Form Builder */}
             <div className="space-y-6 bg-neutral-900/20 border border-neutral-900 rounded-2xl p-6 print:hidden">
-              <h2 className="text-lg font-bold text-neutral-100 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-purple-400" />
-                Configure Quotation
-              </h2>
+              <div className="flex items-center justify-between border-b border-neutral-900 pb-4">
+                <h2 className="text-lg font-bold text-neutral-100 flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-purple-400" />
+                  Configure Quotation
+                </h2>
+                
+                <label className="relative inline-flex items-center cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={showInternalProfits}
+                    onChange={(e) => setShowInternalProfits(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-neutral-900 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-neutral-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600 peer-checked:after:bg-neutral-100"></div>
+                  <span className="ml-2 text-[10px] font-semibold text-neutral-400 peer-checked:text-purple-400 uppercase tracking-wider">
+                    Internal View
+                  </span>
+                </label>
+              </div>
 
               {/* Client Name Input */}
               <div>
@@ -393,21 +418,33 @@ export const Quotations: React.FC = () => {
                     return (
                       <div key={item.id} className="grid grid-cols-12 gap-3 items-center">
                         {/* Product Info */}
-                        <div className="col-span-6 flex items-center gap-2">
-                          {matchedProduct?.image_url ? (
-                            <img 
-                              src={matchedProduct.image_url} 
-                              alt={matchedProduct.name} 
-                              className="h-7 w-7 rounded object-cover border border-neutral-800 bg-neutral-900 shrink-0"
-                            />
-                          ) : (
-                            <div className="h-7 w-7 rounded border border-neutral-800 bg-neutral-900/50 flex items-center justify-center text-neutral-600 shrink-0">
-                              <ImageIcon className="h-3.5 w-3.5" />
-                            </div>
-                          )}
-                          <span className="text-xs font-medium text-neutral-200 truncate">
-                            {matchedProduct?.name || "Loading..."}
-                          </span>
+                        <div className="col-span-6 flex flex-col justify-center">
+                          <div className="flex items-center gap-2">
+                            {matchedProduct?.image_url ? (
+                              <img 
+                                src={matchedProduct.image_url} 
+                                alt={matchedProduct.name} 
+                                className="h-7 w-7 rounded object-cover border border-neutral-800 bg-neutral-900 shrink-0"
+                              />
+                            ) : (
+                              <div className="h-7 w-7 rounded border border-neutral-800 bg-neutral-900/50 flex items-center justify-center text-neutral-600 shrink-0">
+                                <ImageIcon className="h-3.5 w-3.5" />
+                              </div>
+                            )}
+                            <span className="text-xs font-medium text-neutral-200 truncate">
+                              {matchedProduct?.name || "Loading..."}
+                            </span>
+                          </div>
+                          {showInternalProfits && matchedProduct && (() => {
+                            const productMetrics = calculateProductMetrics(matchedProduct);
+                            const unitCost = productMetrics.totalCost;
+                            const unitProfit = item.customPrice - unitCost;
+                            return (
+                              <span className="text-[10px] font-mono mt-1 pl-9 block text-left">
+                                <span className="text-neutral-500">Cost:</span> ₹{unitCost.toFixed(2)} <span className="text-neutral-600">|</span> <span className="text-neutral-500">Profit:</span> <span className={unitProfit >= 0 ? "text-purple-400 font-semibold" : "text-red-400 font-semibold"}>₹{unitProfit.toFixed(2)}</span>
+                              </span>
+                            );
+                          })()}
                         </div>
 
                         {/* Quantity Input */}
@@ -521,42 +558,61 @@ export const Quotations: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <table className="w-full text-left text-xs mb-8">
-                    <thead>
-                      <tr className="border-b border-neutral-800 print:border-neutral-300 text-neutral-400 print:text-neutral-600 font-semibold uppercase tracking-wider text-[10px]">
-                        <th className="pb-3 w-10 text-center">No.</th>
-                        <th className="pb-3 w-12 text-center">Image</th>
-                        <th className="pb-3">Product Name</th>
-                        <th className="pb-3 text-right">Qty</th>
-                        <th className="pb-3 text-right">Unit Price</th>
-                        <th className="pb-3 text-right">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-900 print:divide-neutral-200">
-                      {quoteLines.map((line, idx) => (
-                        <tr key={idx} className="text-neutral-300 print:text-black">
-                          <td className="py-3.5 text-center text-neutral-500 print:text-neutral-500">{idx + 1}</td>
-                          <td className="py-3.5 flex justify-center">
-                            {line?.product.image_url ? (
-                              <img 
-                                src={line.product.image_url} 
-                                alt={line.product.name} 
-                                className="h-8 w-8 rounded object-cover border border-neutral-800 bg-neutral-900 print:border-neutral-300 shrink-0"
-                              />
-                            ) : (
-                              <div className="h-8 w-8 rounded border border-neutral-800 bg-neutral-900/50 flex items-center justify-center text-neutral-600 print:border-neutral-300 print:bg-neutral-100 shrink-0">
-                                <ImageIcon className="h-4 w-4" />
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-3.5 font-medium">{line?.product.name}</td>
-                          <td className="py-3.5 text-right font-mono">{line?.quantity}</td>
-                          <td className="py-3.5 text-right font-mono font-semibold">₹{line?.unitPrice}</td>
-                          <td className="py-3.5 text-right font-mono font-bold">₹{line?.lineTotal}</td>
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left text-xs mb-8 min-w-[550px] print:min-w-0">
+                      <thead>
+                        <tr className="border-b border-neutral-800 print:border-neutral-300 text-neutral-400 print:text-neutral-600 font-semibold uppercase tracking-wider text-[10px] whitespace-nowrap">
+                          <th className="pb-3 w-8 text-center">No.</th>
+                          <th className="pb-3 w-12 text-center">Image</th>
+                          <th className="pb-3 text-left">Product Name</th>
+                          <th className="pb-3 w-12 text-right">Qty</th>
+                          <th className="pb-3 w-24 text-right">Unit Price</th>
+                          <th className="pb-3 w-28 text-right">Total</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-900 print:divide-neutral-200">
+                        {quoteLines.map((line, idx) => (
+                          <tr key={idx} className="text-neutral-300 print:text-black align-top">
+                            <td className="py-4 text-center text-neutral-500 print:text-neutral-500">{idx + 1}</td>
+                            <td className="py-4">
+                              <div className="flex justify-center">
+                                {line?.product.image_url ? (
+                                  <img 
+                                    src={line.product.image_url} 
+                                    alt={line.product.name} 
+                                    className="h-8 w-8 rounded-lg object-cover border border-neutral-800 bg-neutral-900 print:border-neutral-300 shrink-0"
+                                  />
+                                ) : (
+                                  <div className="h-8 w-8 rounded-lg border border-neutral-800 bg-neutral-900/50 flex items-center justify-center text-neutral-600 print:border-neutral-300 print:bg-neutral-100 shrink-0">
+                                    <ImageIcon className="h-4 w-4" />
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-4 font-medium pr-4">
+                              <div className="text-neutral-200">{line?.product.name}</div>
+                              {showInternalProfits && line && (
+                                <div className="text-[10px] text-neutral-500 mt-1.5 flex flex-wrap gap-x-2.5 gap-y-1 font-mono print:hidden">
+                                  <span className="bg-neutral-900/60 px-1.5 py-0.5 rounded border border-neutral-800/40">
+                                    Cost: <span className="text-neutral-300">₹{line.lineCost.toFixed(2)}</span>
+                                    {line.quantity > 1 && <span className="text-neutral-500 text-[9px] ml-1">({line.unitCost.toFixed(2)}/ea)</span>}
+                                  </span>
+                                  <span className="bg-neutral-900/60 px-1.5 py-0.5 rounded border border-neutral-800/40">
+                                    Profit: <span className={line.unitProfit >= 0 ? "text-purple-400 font-semibold" : "text-red-400 font-semibold"}>₹{line.lineProfit.toFixed(2)}</span>
+                                    {line.quantity > 1 && <span className="text-neutral-500 text-[9px] ml-1">({line.unitProfit.toFixed(2)}/ea)</span>}
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-4 text-right font-mono text-neutral-300">{line?.quantity}</td>
+                            <td className="py-4 text-right font-mono font-semibold text-neutral-300">₹{line?.unitPrice}</td>
+                            <td className="py-4 text-right font-mono font-bold text-neutral-100">₹{line?.lineTotal}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
 
                   {/* Summary Totals */}
                   <div className="border-t border-neutral-800 print:border-neutral-300 pt-4 grid grid-cols-2 gap-4 text-xs">
@@ -578,6 +634,18 @@ export const Quotations: React.FC = () => {
                         <span>Grand Total:</span>
                         <span className="font-mono">₹{totalAmount}</span>
                       </div>
+                      {showInternalProfits && (
+                        <div className="space-y-1.5 pt-2 border-t border-neutral-900 print:hidden">
+                          <div className="flex justify-between text-neutral-500 font-medium">
+                            <span>Total Cost:</span>
+                            <span className="font-mono">₹{totalCost.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between text-purple-400 font-bold">
+                            <span>Est. Total Profit:</span>
+                            <span className="font-mono">₹{totalProfit.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </>
