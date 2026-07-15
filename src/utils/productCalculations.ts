@@ -12,7 +12,7 @@ export function calculateProductMetrics(product: Product): CalculatedProduct {
     ? product.electricity_rate
     : ELECTRICITY_RATE;
   const electricityCost = decimalHours * PRINTER_POWER * rate;
-  const totalCost = filamentCost + electricityCost;
+  const totalCost = filamentCost + electricityCost + (product.packaging_cost || 0) + (product.delivery_cost || 0);
   const profit = product.selling_price - totalCost;
   const maxPiecesPerDay = decimalHours > 0 ? Math.floor(24 / decimalHours) : 0;
 

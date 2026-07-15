@@ -24,6 +24,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const [filamentWeight, setFilamentWeight] = useState('');
   const [costPerKg, setCostPerKg] = useState('');
   const [sellingPrice, setSellingPrice] = useState('');
+  const [packagingCost, setPackagingCost] = useState('');
+  const [deliveryCost, setDeliveryCost] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [electricityRate, setElectricityRate] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -37,6 +39,16 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       setFilamentWeight(product.filament_weight.toString());
       setCostPerKg(product.cost_per_kg.toString());
       setSellingPrice(product.selling_price.toString());
+      setPackagingCost(
+        product.packaging_cost !== undefined && product.packaging_cost !== null
+          ? product.packaging_cost.toString()
+          : ''
+      );
+      setDeliveryCost(
+        product.delivery_cost !== undefined && product.delivery_cost !== null
+          ? product.delivery_cost.toString()
+          : ''
+      );
       setImageUrl(product.image_url || '');
       setElectricityRate(
         product.electricity_rate !== undefined && product.electricity_rate !== null
@@ -49,6 +61,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       setFilamentWeight('');
       setCostPerKg('');
       setSellingPrice('');
+      setPackagingCost('');
+      setDeliveryCost('');
       setImageUrl('');
       setElectricityRate('');
     }
@@ -61,6 +75,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const rawWeight = parseFloat(filamentWeight) || 0;
   const rawCostPerKg = parseFloat(costPerKg) || 0;
   const rawSellingPrice = parseFloat(sellingPrice) || 0;
+  const rawPackagingCost = parseFloat(packagingCost) || 0;
+  const rawDeliveryCost = parseFloat(deliveryCost) || 0;
   const isTimeValid = isValidPrintTime(printTime);
 
   const decimalHours = isTimeValid ? parsePrintTimeToHours(printTime) : 0;
@@ -72,7 +88,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const filamentCost = hasFilament ? (rawWeight / 1000) * rawCostPerKg : 0;
 
   const hasTotalCost = isTimeValid && hasFilament;
-  const totalCost = hasTotalCost ? filamentCost + electricityCost : 0;
+  const totalCost = hasTotalCost ? filamentCost + electricityCost + rawPackagingCost + rawDeliveryCost : 0;
 
   const hasProfit = hasTotalCost && rawSellingPrice > 0;
   const profit = hasProfit ? rawSellingPrice - totalCost : 0;
@@ -109,6 +125,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         filament_weight: rawWeight,
         cost_per_kg: rawCostPerKg,
         selling_price: rawSellingPrice,
+        packaging_cost: rawPackagingCost,
+        delivery_cost: rawDeliveryCost,
         image_url: imageUrl.trim() === '' ? null : imageUrl,
         electricity_rate: electricityRate.trim() === '' ? null : parseFloat(electricityRate),
       });
@@ -260,6 +278,31 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <label className="block text-sm font-medium text-neutral-400">Packaging Cost (₹)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={packagingCost}
+                    onChange={(e) => setPackagingCost(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-neutral-100 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm"
+                    placeholder="e.g., 20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400">Delivery Cost (₹)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={deliveryCost}
+                    onChange={(e) => setDeliveryCost(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-neutral-100 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm"
+                    placeholder="e.g., 60"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <label className="block text-sm font-medium text-neutral-400">Elec. Rate (₹/kWh) (Optional)</label>
                   <input
                     type="number"
@@ -329,6 +372,18 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <span className="text-neutral-500">Electricity Cost:</span>
                     <span className="font-mono text-neutral-300">
                       {isTimeValid ? `₹${electricityCost.toFixed(2)}` : '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Packaging Cost:</span>
+                    <span className="font-mono text-neutral-300">
+                      ₹{rawPackagingCost.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Delivery Cost:</span>
+                    <span className="font-mono text-neutral-300">
+                      ₹{rawDeliveryCost.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-neutral-900 pt-2 font-medium">

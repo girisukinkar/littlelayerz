@@ -38,6 +38,8 @@ export const ProductTable: React.FC<ProductTableProps> = ({
             <th className="px-4 py-3.5 text-right">Weight (g)</th>
             <th className="px-4 py-3.5 text-right">Filament Cost</th>
             <th className="px-4 py-3.5 text-right">Power Cost</th>
+            <th className="px-4 py-3.5 text-right">Pkg Cost</th>
+            <th className="px-4 py-3.5 text-right">Del. Cost</th>
             <th className="px-4 py-3.5 text-right">Total Cost</th>
             <th className="px-4 py-3.5 text-right">Selling Price</th>
             <th className="px-4 py-3.5 text-right">Profit</th>
@@ -96,6 +98,16 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 {/* Electricity Cost */}
                 <td className="px-4 py-3.5 text-right text-neutral-400 font-mono">
                   ₹{product.electricityCost.toFixed(2)}
+                </td>
+
+                {/* Packaging Cost */}
+                <td className="px-4 py-3.5 text-right text-neutral-400 font-mono">
+                  ₹{(product.packaging_cost || 0).toFixed(2)}
+                </td>
+
+                {/* Delivery Cost */}
+                <td className="px-4 py-3.5 text-right text-neutral-400 font-mono">
+                  ₹{(product.delivery_cost || 0).toFixed(2)}
                 </td>
                 
                 {/* Total Cost */}

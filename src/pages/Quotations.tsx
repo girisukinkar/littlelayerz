@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useProducts } from '../hooks/useProducts';
 import { useQuotations } from '../hooks/useQuotations';
+import { useOrders } from '../hooks/useOrders';
 import { useParams, useNavigate } from 'react-router-dom';
 import { parsePrintTimeToHours, formatHoursToPrintTime } from '../utils/printTimeParser';
 import { calculateProductMetrics } from '../utils/productCalculations';
@@ -18,7 +19,8 @@ import {
   RefreshCw, 
   CheckCircle2, 
   ShieldAlert,
-  ChevronDown
+  ChevronDown,
+  ShoppingBag
 } from 'lucide-react';
 import type { SavedQuotation } from '../types/quotation';
 
@@ -43,6 +45,9 @@ export const Quotations: React.FC = () => {
     isSaving, 
     deleteQuotation 
   } = useQuotations();
+  const { addOrder } = useOrders();
+
+  const [isConverting, setIsConverting] = useState(false);
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -192,6 +197,39 @@ export const Quotations: React.FC = () => {
     }
   };
 
+  const handleConvertToOrder = async () => {
+    if (quoteLines.length === 0) {
+      triggerAlert('error', 'Cannot convert an empty quotation.');
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to convert this quotation into ${quoteLines.length} order(s)?`)) {
+      setIsConverting(true);
+      try {
+        const orderPayloads = items.map(item => ({
+          customer_name: clientName.trim() || 'Valued Customer',
+          product_id: item.productId,
+          quantity: item.quantity,
+          amount: item.customPrice * item.quantity,
+          status: 'Pending' as const,
+          notes: `Converted from Quotation Ref: ${quoteRef}`,
+        }));
+
+        await Promise.all(orderPayloads.map(payload => addOrder(payload)));
+        
+        triggerAlert('success', `Successfully converted quotation to ${quoteLines.length} order(s)! Redirecting to orders...`);
+        
+        setTimeout(() => {
+          navigate('/orders');
+        }, 1500);
+      } catch (err: any) {
+        triggerAlert('error', err.message || 'Failed to convert quotation.');
+      } finally {
+        setIsConverting(false);
+      }
+    }
+  };
+
   const handleNewQuote = () => {
     if (!id) {
       setSelectedQuoteId(null);
@@ -284,6 +322,19 @@ export const Quotations: React.FC = () => {
             >
               <Printer className="h-4 w-4" />
               Print / Save PDF
+            </button>
+
+            <button
+              onClick={handleConvertToOrder}
+              disabled={quoteLines.length === 0 || isConverting}
+              className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:from-blue-500 hover:to-indigo-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:active:scale-100"
+            >
+              {isConverting ? (
+                <span className="h-4 w-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
+              ) : (
+                <ShoppingBag className="h-4 w-4" />
+              )}
+              Convert to Order
             </button>
           </div>
         </header>
