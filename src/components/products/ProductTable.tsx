@@ -2,6 +2,7 @@ import React from 'react';
 import type { Product } from '../../types/product';
 import { calculateProductMetrics } from '../../utils/productCalculations';
 import { Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { useSettingsStore } from '../../store/useSettingsStore';
 
 interface ProductTableProps {
   products: Product[];
@@ -16,6 +17,9 @@ export const ProductTable: React.FC<ProductTableProps> = ({
   onDelete,
   deletingId,
 }) => {
+  // Subscribe to settings store to trigger re-renders on settings updates
+  useSettingsStore();
+
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900/30 p-12 text-center backdrop-blur-sm">

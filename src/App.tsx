@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-do
 import { Products } from './pages/Products';
 import { Orders } from './pages/Orders';
 import { Quotations } from './pages/Quotations';
-import { Database, ShoppingBag, FileText } from 'lucide-react';
+import { Settings } from './pages/Settings';
+import { Database, ShoppingBag, FileText, Settings as SettingsIcon } from 'lucide-react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +64,17 @@ function AppContent() {
               <FileText className="h-3.5 w-3.5" />
               Quotations
             </NavLink>
+            <NavLink
+              to="/settings"
+              className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                isActive
+                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400 font-bold'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
+              }`}
+            >
+              <SettingsIcon className="h-3.5 w-3.5" />
+              Settings
+            </NavLink>
           </div>
         </div>
       </nav>
@@ -74,6 +86,7 @@ function AppContent() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/quotations" element={<Quotations />} />
           <Route path="/quotations/:id" element={<Quotations />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/products" replace />} />
         </Routes>
       </main>

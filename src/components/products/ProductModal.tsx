@@ -3,6 +3,7 @@ import type { Product } from '../../types/product';
 import { isValidPrintTime, parsePrintTimeToHours } from '../../utils/printTimeParser';
 import { X, Calculator, Info } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useSettingsStore } from '../../store/useSettingsStore';
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   product,
   isSubmitting,
 }) => {
+  const settings = useSettingsStore();
+
   const [name, setName] = useState('');
   const [printTime, setPrintTime] = useState('');
   const [filamentWeight, setFilamentWeight] = useState('');
@@ -61,13 +64,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       setFilamentWeight('');
       setCostPerKg('');
       setSellingPrice('');
-      setPackagingCost('');
-      setDeliveryCost('');
+      setPackagingCost(settings.defaultPackagingCost.toString());
+      setDeliveryCost(settings.defaultDeliveryCost.toString());
       setImageUrl('');
       setElectricityRate('');
     }
     setErrorMsg('');
-  }, [product, isOpen]);
+  }, [product, isOpen, settings]);
 
   if (!isOpen) return null;
 
@@ -80,8 +83,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const isTimeValid = isValidPrintTime(printTime);
 
   const decimalHours = isTimeValid ? parsePrintTimeToHours(printTime) : 0;
-  const rawElectricityRate = electricityRate.trim() === '' ? 7.1 : (parseFloat(electricityRate) || 7.1);
-  const electricityCost = isTimeValid ? decimalHours * 0.08 * rawElectricityRate : 0;
+  const rawElectricityRate = electricityRate.trim() === '' ? settings.electricityRate : (parseFloat(electricityRate) || settings.electricityRate);
+  const electricityCost = isTimeValid ? decimalHours * settings.printerPower * rawElectricityRate : 0;
   const maxPiecesPerDay = decimalHours > 0 ? Math.floor(24 / decimalHours) : 0;
 
   const hasFilament = rawWeight > 0 && rawCostPerKg > 0;
@@ -408,7 +411,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               </div>
 
               <div className="mt-4 border-t border-neutral-900 pt-3 text-[10px] text-neutral-500">
-                Electricity calculated at ₹{rawElectricityRate.toFixed(1)}/kWh rate for an 80W power consumption profile.
+                Electricity calculated at ₹{rawElectricityRate.toFixed(1)}/kWh rate for a {(settings.printerPower * 1000).toFixed(0)}W power consumption profile.
               </div>
             </div>
           </div>
