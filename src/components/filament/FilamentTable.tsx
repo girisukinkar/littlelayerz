@@ -37,6 +37,7 @@ export const FilamentTable: React.FC<FilamentTableProps> = ({
             <th className="px-4 py-3.5">Spool Tag</th>
             <th className="px-4 py-3.5 text-right">Grams Left</th>
             <th className="px-4 py-3.5 text-right">Cost per Kg</th>
+            <th className="px-4 py-3.5 text-right">Cost per Gram</th>
             <th className="px-4 py-3.5 text-right">Purchase Price</th>
             <th className="px-4 py-3.5 text-center">Remaining Spool %</th>
             <th className="px-4 py-3.5 text-center">Actions</th>
@@ -108,6 +109,11 @@ export const FilamentTable: React.FC<FilamentTableProps> = ({
                 {/* Cost per Kg */}
                 <td className="px-4 py-3.5 text-right text-neutral-400 font-mono">
                   ₹{filament.cost_per_kg.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </td>
+
+                {/* Cost per Gram */}
+                <td className="px-4 py-3.5 text-right text-neutral-400 font-mono">
+                  ₹{(filament.cost_per_kg / 1000).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}
                 </td>
 
                 {/* Purchase Price */}
