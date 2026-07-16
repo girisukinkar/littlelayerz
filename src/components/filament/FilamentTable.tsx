@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Filament } from '../../types/filament';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface FilamentTableProps {
   filaments: Filament[];
@@ -15,6 +15,9 @@ export const FilamentTable: React.FC<FilamentTableProps> = ({
   onDelete,
   deletingId,
 }) => {
+  const [sortField, setSortField] = useState<keyof Filament | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
   if (filaments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900/30 p-12 text-center backdrop-blur-sm">
@@ -26,25 +29,84 @@ export const FilamentTable: React.FC<FilamentTableProps> = ({
     );
   }
 
+  const handleSort = (field: keyof Filament) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const sortedFilaments = [...filaments].sort((a, b) => {
+    if (!sortField) return 0;
+
+    const valA = a[sortField];
+    const valB = b[sortField];
+
+    if (valA === undefined || valA === null) return 1;
+    if (valB === undefined || valB === null) return -1;
+
+    if (typeof valA === 'string' && typeof valB === 'string') {
+      return sortOrder === 'asc'
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    }
+
+    if (typeof valA === 'boolean' && typeof valB === 'boolean') {
+      return sortOrder === 'asc'
+        ? (valA === valB ? 0 : valA ? 1 : -1)
+        : (valA === valB ? 0 : valA ? -1 : 1);
+    }
+
+    // Numbers
+    return sortOrder === 'asc'
+      ? (valA as number) - (valB as number)
+      : (valB as number) - (valA as number);
+  });
+
+  const renderSortableHeader = (label: string, field: keyof Filament, alignClass = "") => {
+    const isSorted = sortField === field;
+    return (
+      <th
+        onClick={() => handleSort(field)}
+        className={`px-4 py-3.5 cursor-pointer hover:bg-neutral-900/60 transition-colors select-none group text-xs font-semibold uppercase tracking-wider text-neutral-400 ${alignClass}`}
+      >
+        <div className={`flex items-center gap-1 ${alignClass.includes('text-right') ? 'justify-end' : ''} ${alignClass.includes('text-center') ? 'justify-center' : ''}`}>
+          <span>{label}</span>
+          {isSorted ? (
+            sortOrder === 'asc' ? (
+              <ArrowUp className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+            ) : (
+              <ArrowDown className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+            )
+          ) : (
+            <ArrowUpDown className="h-3.5 w-3.5 text-neutral-600 group-hover:text-neutral-400 transition-colors shrink-0" />
+          )}
+        </div>
+      </th>
+    );
+  };
+
   return (
     <div className="overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-950 shadow-xl">
       <table className="w-full border-collapse text-left text-sm text-neutral-300">
         <thead>
-          <tr className="border-b border-neutral-800 bg-neutral-900/50 text-xs font-semibold uppercase tracking-wider text-neutral-400">
-            <th className="px-4 py-3.5">Filament Name</th>
-            <th className="px-4 py-3.5">Color Info</th>
-            <th className="px-4 py-3.5">Type</th>
-            <th className="px-4 py-3.5">Spool Tag</th>
-            <th className="px-4 py-3.5 text-right">Grams Left</th>
-            <th className="px-4 py-3.5 text-right">Cost per Kg</th>
-            <th className="px-4 py-3.5 text-right">Cost per Gram</th>
-            <th className="px-4 py-3.5 text-right">Purchase Price</th>
-            <th className="px-4 py-3.5 text-center">Remaining Spool %</th>
-            <th className="px-4 py-3.5 text-center">Actions</th>
+          <tr className="border-b border-neutral-800 bg-neutral-900/50">
+            {renderSortableHeader('Filament Name', 'name')}
+            {renderSortableHeader('Color Info', 'color_name')}
+            {renderSortableHeader('Type', 'type')}
+            {renderSortableHeader('Spool Tag', 'has_spool')}
+            {renderSortableHeader('Grams Left', 'grams_left', 'text-right')}
+            {renderSortableHeader('Cost per Kg', 'cost_per_kg', 'text-right')}
+            {renderSortableHeader('Cost per Gram', 'cost_per_kg', 'text-right')}
+            {renderSortableHeader('Purchase Price', 'purchase_price', 'text-right')}
+            <th className="px-4 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-neutral-400">Remaining Spool %</th>
+            <th className="px-4 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-neutral-400">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-900">
-          {filaments.map((filament) => {
+          {sortedFilaments.map((filament) => {
             const isDeleting = deletingId === filament.id;
             // Assume 1000g standard spool size
             const remainingPct = Math.min(100, Math.max(0, (filament.grams_left / 1000) * 100));
