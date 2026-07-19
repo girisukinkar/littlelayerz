@@ -1,0 +1,170 @@
+[
+  {
+    "name": "_abck",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "_ga",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "_ga_K0EVP6J9VG",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "_ga_NEH2MEG9CT",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "_gcl_au",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "_gcl_aw",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "_gcl_gs",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "ak_bmsc",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "bm_s",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "bm_sv",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "bm_sz",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "mp_60483c180bee99d71ee5c084d7bb9d20_mixpanel",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "mp_a66867feba42257f4b46689d52d48f86_mixpanel",
+    "value": "",
+    "domain": ".meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "bm_lso",
+    "value": "",
+    "domain": ".www.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "SentryObservability",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "SocketMessages",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "browser_id",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "browser_uid",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "connect.sid",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "current_az_identifier",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "disable_barcoded_packets_tooltip",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "download_button",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "excel_updated",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "hidden_payment_banners",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "highlight_downloads",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "mobile_search",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "null",
+    "value": "",
+    "domain": "supplier.meesho.com",
+    "path": "/"
+  },
+  {
+    "name": "ORDER_BLOCK_EXPERIMENT_COOKIE",
+    "value": "",
+    "domain": "www.meesho.com",
+    "path": "/"
+  }
+]

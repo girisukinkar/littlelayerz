@@ -1,0 +1,1168 @@
+[
+  {
+    "url": "https://supplier.meesho.com/api/container/supplier/prefetch-supply-data",
+    "method": "POST",
+    "postData": "{\"identifier\":\"req4n\"}",
+    "response": {
+      "registrationStatus": {
+        "decodedToken": {
+          "email": "girisukinkar@gmail.com",
+          "role": "user",
+          "user_id": "e7ac5d82-41e9-4dc2-99ff-7ecd07f3db03",
+          "valid": 1,
+          "supplier_identifiers": [
+            "req4n"
+          ],
+          "supplier_identifier_to_id_mapping": {
+            "req4n": 4402738
+          },
+          "is_deferred": false,
+          "parent_brand_ids": [],
+          "group_supplier_ids": [],
+          "registration_status": "SUPPLIER_CREATED"
+        },
+        "isAuthenticated": true
+      },
+      "supplier": {
+        "supplier_id": 4402738,
+        "name": "DexForge",
+        "identifier": "req4n",
+        "email": "girisukinkar@gmail.com",
+        "phone": "8898192066",
+        "carrier_id": 4,
+        "default_monetization_percent": "4.0",
+        "default_monetization_type": "1",
+        "supplies_replica": "false",
+        "account_manager_id": "16",
+        "is_agreement_accepted": false,
+        "prime_category": "0",
+        "logistic_fee_enabled": "1",
+        "login_enabled": true,
+        "enable_inventory": true,
+        "enable_no_packing_needed_tab": false,
+        "ads_smart_campaign_banner_last_cancel_date": "2022,1,20",
+        "meesholink-parallel-order-processing-enabled": false,
+        "whatsapp_opt_in": true,
+        "enable_no_packing_needed_tan": false,
+        "sscat_shipping_adjustment": true,
+        "cancellation_penalty": "default",
+        "enable_influencer_marketing": false,
+        "enable_price_recommendations_v3": true,
+        "preferred_carrier": "4",
+        "ads_has_seen_vg_popup_info": false,
+        "exchange_penalty_disabled": "false",
+        "enable_compliance_attribute_upload": false,
+        "npp_vsku_pricing_enabled": true,
+        "bank_details_exp_self_serve_enabled": true,
+        "wdrp_max_guardrail_percentage": 1,
+        "exclusive": "false",
+        "enable_home_mweb_v3": true,
+        "enable_meesho_promotions": false,
+        "ops_status_id": "1",
+        "is_waas_banner_enabled": false,
+        "enable_referral_v3": true,
+        "show_ads_on_inventory_tooltip": true,
+        "ads_sales_day_budget_consent": "default",
+        "enable_compliance_gating": false,
+        "enable_lc_upcoming_tab": false,
+        "enable_claim_approvals_promotional_banner": false,
+        "enable_support_tampered_packaging": false,
+        "loadshare_supplier_code": "default",
+        "enable_smart_sourcing_v2": false,
+        "enable_picklist": false,
+        "valid_change_type": "default",
+        "enable_support_claims_upstream_ds_validation": false,
+        "is_live_commerce_enabled": false,
+        "disable_incentive_v2": false,
+        "enable_return_recon_claims": true,
+        "returns": "1",
+        "last_interacted_tos_modal": "2022,01,20",
+        "enable_claims_revamp": false,
+        "delhivery_supplier_code": "default",
+        "enable_sale_event": false,
+        "ads_smart_campaign_modal_last_cancel_date": "2022,1,20",
+        "enable_product_recommendations": false,
+        "enable_bulk_inventory_update": true,
+        "bd_exec_id": "312",
+        "enable_inventory_needs_attention": false,
+        "enable_reward_incentive": true,
+        "ads_smart_campaign_upsell_banner_submit_date": "2022,1,20",
+        "enable_support_label_download": false,
+        "compliance_gating_supplier_enabled_v1": true,
+        "enable_support_claims_blocking_on_suborder": false,
+        "enable_promotions_v1": true,
+        "enable_supplier_support_v3": true,
+        "enable_supplier_support": true,
+        "enable_meesho_recommendation_vtax": true,
+        "enable_supplier_program_review": false,
+        "enable_notices_mweb_v3": true,
+        "supplier_wdrp_difference": false,
+        "npp_variation_type": 4,
+        "sells_to_reseller": "0",
+        "enable_support_claims_evidence_ds": false,
+        "enable_ni_supplier_removal_feature": true,
+        "ads_smart_campaign_upsell_banner_last_cancel_date": "2022,1,20",
+        "is_v3_settings_active": true,
+        "enable_combining_label_and_manifest_download_flow": true,
+        "ads_new_catalog_tester_insights_pop_up_shown": false,
+        "additional_comments": null,
+        "enable_no_pack_banner": false,
+        "loc_preapproved_amount": 0,
+        "enable_support_chatbot": false,
+        "pricing_competitive_marketplace_metrics": 0,
+        "enable_support_h2_experiment": false,
+        "enable_referral_desktop_v3": true,
+        "enable_product_recommendations_mweb_v3": false,
+        "enable_notices_v3": true,
+        "shipping_charges": "70",
+        "enable_mweb_catalog_simplification": false,
+        "disable_returns": false,
+        "agreement_accepted_ip": "default",
+        "enable_ads_v3": false,
+        "enable_webinar": false,
+        "lpr_master_opt_in": false,
+        "remove_high_price_tab": true,
+        "ads_has_auto_played_vg_video": false,
+        "enable_returns_v3": true,
+        "compliance_attribute_upload_limit": 5,
+        "bp_scan_relink": true,
+        "enable_shipped_v2": false,
+        "enable_growth_insights_v1": false,
+        "enable_supplier_ads": false,
+        "show_bank_success_banner": false,
+        "enable_ready_to_ship_v2": false,
+        "homogenized_supplier_experiment_cohort_flag": false,
+        "enable_async_label_download": true,
+        "enable_referral": true,
+        "mall_commission_rate": 0,
+        "enable_smart_price": true,
+        "oos_reason_collection": false,
+        "shipping_rating": "4.0",
+        "enable_settings_v3": true,
+        "whatsapp_number": "8796837718",
+        "viewed_campaign_details_onboarding": false,
+        "enable_share_referral_banner_on_app": true,
+        "enable_catalog_management": true,
+        "ads_performance_page_banner_last_cancel_date": "2022,1,20",
+        "compliance_gating_supplier_repeat_offender": false,
+        "enable_support_cmb": false,
+        "enable_price_recommendation_v2": true,
+        "ads_new_catalog_booster_manual_creation_visited": -1,
+        "smart_pricing_mweb_variant": 1,
+        "enable_support_price_change_excel_upload": false,
+        "is_supplier_ums_first_login": true,
+        "enable_size_chart": false,
+        "whatsapp_opt_in_v2": false,
+        "socket_messages_config": "{\"scale\":1,\"retry\":false,\"minRetryDelay\":40000,\"maxRetryDelay\":120000}",
+        "npp_variation_type_bulkCatalog": 3,
+        "is_supplier_enabled_for_pc": false,
+        "enable_gst_transition": false,
+        "agreement_accepted": "0",
+        "scalable_supplier": false,
+        "enable_claims_v3": false,
+        "ads_new_catalog_booster_manual_creation_last_visited_date": "2023,01,01",
+        "enable_meri_shop_widget": true,
+        "enable_catalog_category_simplification": true,
+        "enable_supplier_support_inbound_call": false,
+        "enabled_bank_details_edit_self_serve": true,
+        "enable_latch_on_mweb": true,
+        "last_reactivation_attempt_at": "2021-01-01T00:00:00",
+        "meesho_hub": "0",
+        "enable_old_catalog_upload": false,
+        "enable_price_reco_bulk": true,
+        "npp_v2_bulk_catalog_upload_variant": 1,
+        "is_deferred_supplier": false,
+        "is_supplier_enabled_for_sos": true,
+        "enable_bp_scan_desktop": true,
+        "is_consolidation_enabled_for_supplier": false,
+        "enable_support_claims_multiple": false,
+        "enable_3pl_preference": true,
+        "bp_buy_cta": true,
+        "enable_only_wrong_return": true,
+        "enable_supplier_referral_invite": true,
+        "ads_smart_campaign_manual_creation_last_visited_date": "2023,07,10",
+        "disable_catalog_upload": false,
+        "enable_listing_go_live": true,
+        "enable_bulk_catalog_upload": true,
+        "enable_single_catalog_upload": true,
+        "bulk_compliance_attribute_update_v2": true,
+        "one_direct_am": "",
+        "clickwrap_signing_name": "-",
+        "xpressbees_supplier_code": "default",
+        "oms-client": "null",
+        "enable_catalog_visibility": true,
+        "deactivation_reason": "default",
+        "enable_add_recommended_category": true,
+        "enable_wdrp_guardrail": false,
+        "enable_catalog_product_crud_with_taxonomy": true,
+        "seller_code": "default",
+        "clickwrap_mobile_number": "-",
+        "disable_supplier_sales_metrics": false,
+        "bp_scan_state": true,
+        "pay_tds": "default",
+        "referral_fraud_nonincremental_feature": true,
+        "enable_bulk_images_upload": true,
+        "enable_whatsapp_subscription": true,
+        "enable_activation_v3": true,
+        "website_link": null,
+        "enable_on_hold_v2": false,
+        "enable_quality_dashboard_v2": true,
+        "enable_price_control_mweb": true,
+        "enable_quality_dashboard_v4": false,
+        "dtdc_supplier_code": "default",
+        "enable_price_control": true,
+        "enable_quality_dashboard_v3": false,
+        "support_restrict_tickets_via_others": false,
+        "is_sunday_working": false,
+        "enable_single_image_upload_v2_exp": 0,
+        "margin_free_period": "0",
+        "gst_invalid_banner": false,
+        "agreement_accepted_time": "default",
+        "non_gst_migration": false,
+        "ecom_supplier_code": "default",
+        "enable_ads_daily_budget_guide": true,
+        "show_ads_on_inventory_popup": false,
+        "enable_cross_sell_recos": 1,
+        "ops_exec_id": "default",
+        "enable_return_overview": true,
+        "enable_support_transparent_packaging": false,
+        "disable_cod": false,
+        "label_template_version": "default",
+        "deactivation_date": "default",
+        "is_exchange_available": true,
+        "poc_name": "Girish Sukinkar",
+        "orig_supplier_id": "default",
+        "one_direct_enable": false,
+        "ads_smart_campaign_modal_last_view_date": "2022,1,20",
+        "force_payment_block": false,
+        "show_desc_as_textbox": true,
+        "enable_dynamic_sscat_image_guidelines": true,
+        "ads_cpc_bidding_popup_count": 0,
+        "elasticrun_supplier_code": "default",
+        "enable_payments_v3": true,
+        "enable_hold": true,
+        "enable_promotions_flash": true,
+        "qc_status_id": "1",
+        "availability_rating": "4.0",
+        "enable_product_recommendations_v2": false,
+        "enable_product_recommendations_v3": false,
+        "delhivery_name": "MEESHO DexForge req4n",
+        "enable_price_recommendation": false,
+        "shadowfox_supplier_code": "default",
+        "enable_status_visibility_in_bulk_inventory_update": false,
+        "enable_qc_visibility": true,
+        "first_order_activation_date": "default",
+        "enable_supplier_leave_form": true,
+        "is_created_by_supplier_ums": true,
+        "supplier_check_referral_abuse": true,
+        "shipping_bracket": "1000",
+        "enable_cancelled_v2": false,
+        "cod_available": "1",
+        "facebook_link": null,
+        "enable_smart_sourcing": false,
+        "new_invoicing_enabled": "1",
+        "enable_webinar_v2": true,
+        "enable_pending_v2": false,
+        "first_mile_nodes": "default",
+        "logistic_fee_enable_time": "default",
+        "enable_promotions": true,
+        "enable_supplier_incentive_v2": false,
+        "gst_transition": false,
+        "npp_variation_type_mweb": 3,
+        "enable_support_multiple_claims": true,
+        "enable_product_recommendations_top_selling": false,
+        "wow_supplier_code": "default",
+        "included_ads_widget_list": "ONE_CLICK,SMART_CAMPAIGN,BCP,INCREMENT_BUDGET,RESTART",
+        "enable_marketplace": false,
+        "supplier_replica": "default",
+        "order_confirmation_email_enabled": "true",
+        "enable_finance_tab": true,
+        "hide_customer_contact": false,
+        "enable_mweb_catalog_upload": true,
+        "last_interacted_tos_banner": "2022,01,20",
+        "deferred_payments_enabled": false,
+        "enable_return_rto_orders_v2": false,
+        "enable_orders_v3": true,
+        "clickwrap_business_registered_name": "-",
+        "enable_home_v3": true,
+        "quality_rating": "4.0",
+        "delhivery_warehouses": "{\"surface\":\"MEESHO DexForge req4n\",\"express\":\"MEESHO DexForge req4n\",\"bulk\":\"MEESHO DexForge req4n\"}",
+        "enable_promotions_smartcoin": true,
+        "enable_async_gst_download": true,
+        "enable_business_dashboard_v2": true,
+        "return_penalty_disabled": "false",
+        "enable_business_dashboard_v1": true,
+        "enable_meecom_web_popup": true,
+        "max_quantity": 10,
+        "show_ad_credits_tooltip": true,
+        "agentless_support_enabled": false,
+        "enable_npp_high_asp": true,
+        "test_attribute": false,
+        "supplier_type": "TRADER",
+        "enable_support_tickets_revamp": true,
+        "enable_aggregator_merging": true,
+        "enable_support_one_click_ssat": false,
+        "ads_smart_campaign_manual_creation_visited": -1,
+        "supplier_ignore_optin_ids": "176,177,178,179,187",
+        "fastrack_enabled": false,
+        "enable_waas_supplier": false,
+        "cross_sell_reco_variant": 0,
+        "smart_pricing_variant": 1,
+        "portfolio": "Others",
+        "enable_origin_country_input": true,
+        "incentive_v2_supplier_id_threshold": 846923,
+        "stepper_journey_status": "StepperStepComplete",
+        "return_policy": "default",
+        "clickwrap_gstin": "-",
+        "international": "0",
+        "deactivated_by": "default",
+        "enable_high_asp_flag": 0,
+        "fareye_supplier_code": "default",
+        "enable_ipp": true,
+        "is_first_login": false,
+        "enable_ipp_image_recommendations": true,
+        "enable_support_order_confirmation_and_cancellation": false,
+        "ads_performance_page_popup_last_view_date": "2022,1,20",
+        "enable_catalog_category_search": true,
+        "enable_catalog_upload_v3": true,
+        "ads_widget_details_on_HP": "{\n  \"widget_type\":\"DEFAULT\",\n  \"view_date\": \"2023,1,23\",\n  \"no_of_days\": \"0\"\n}",
+        "enable_variation_level_pricing": true,
+        "enable_inventory_v3": true,
+        "enable_meesho_recommendation": true,
+        "enable_inventory_v2": false,
+        "show_referral_banner": false,
+        "wdrp_min_guardrail_percentage": 50,
+        "enable_async_pending_orders": true,
+        "return_exchange_banned_carriers": "default",
+        "fedex_supplier_code": "default",
+        "clickwrap_gstin_address": "-",
+        "last_interacted_ads_widget": "2022,1,20",
+        "enable_product_optimiser": true,
+        "is_return_available": true,
+        "enable_live_video": false,
+        "business_type": "I have a manufacturing unit and sell directly to customers online",
+        "enable_supplier_authorised_brand_seller": false,
+        "enable_mweb_upload_desktop": true,
+        "meesho_fulfilled": "1",
+        "cod_charges": "0",
+        "no_reason_return_percent": "0",
+        "enable_barcoded_packaging_dashboard": false,
+        "price_recommendation_v3_mobile": true,
+        "rpc": false,
+        "skip_cis_qc": true,
+        "enable_rts_sort_filter": true,
+        "enable_completed_tab": false,
+        "enable_catalog_edit": true,
+        "enable_catalog_edit_mweb": false,
+        "enable_supplier_signature_v2": false,
+        "price_control_tool_tip": true,
+        "qrcode_on_s2r_invoice": false,
+        "enable_promotions_deal": true,
+        "orders_enable_scan_and_pack": false,
+        "waas_b2b_pickup_address": "{}",
+        "handle": "DexForge",
+        "gst_type": "ENROLMENT",
+        "valid": true,
+        "return_ui_enable": true,
+        "quality_dashboard_enable": true,
+        "trusted": false,
+        "kyc_details": {
+          "gst_type": "ENROLMENT",
+          "gstin": "272600220718ES6",
+          "account_number": "8898192066",
+          "account_holder_name": "Girish Subhash Sukinkar",
+          "bank_name": "AIRTEL PAYMENTS BANK LIMITED",
+          "ifsc_code": "AIRP0000001",
+          "bank_details_status": "approved",
+          "gstin_otp_verification_status": true,
+          "gstin_registered_mobile": "+91 - 8*******66"
+        }
+      },
+      "user": {
+        "id": "e7ac5d82-41e9-4dc2-99ff-7ecd07f3db03",
+        "uid": "e7ac5d82-41e9-4dc2-99ff-7ecd07f3db03",
+        "name": "",
+        "email": "girisukinkar@gmail.com",
+        "mobile_number": "8898192066",
+        "moderator": "girisukinkar@gmail.com",
+        "role": "user",
+        "language": {
+          "id": 1,
+          "name": "English",
+          "iso_language_code": "EN"
+        },
+        "country": {
+          "id": 1,
+          "name": "India",
+          "iso_country_code": "IN"
+        },
+        "created": "",
+        "valid": true,
+        "suppliers": [
+          {
+            "supplier_id": 4402738,
+            "identifier": "req4n",
+            "name": "DexForge"
+          }
+        ],
+        "feature_permissions": {}
+      }
+    },
+    "status": 200
+  },
+  {
+    "url": "https://sentry.meesho.com/api/6/envelope/?sentry_key=68513ea1498f3a6733cde4c812c62162&sentry_version=7&sentry_client=sentry.javascript.react%2F8.34.0",
+    "method": "POST",
+    "postData": "{\"sent_at\":\"2026-07-16T20:07:10.216Z\",\"sdk\":{\"name\":\"sentry.javascript.react\",\"version\":\"8.34.0\"}}\n{\"type\":\"session\"}\n{\"sid\":\"793f6e7acfc2485da05e6926881a6022\",\"init\":true,\"started\":\"2026-07-16T20:07:10.216Z\",\"timestamp\":\"2026-07-16T20:07:10.216Z\",\"status\":\"ok\",\"errors\":0,\"attrs\":{\"release\":\"supplier-panel-container-1.0.36\",\"environment\":\"production\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"}}"
+  },
+  {
+    "url": "https://supplier.meesho.com/api/container/supplier/api/2.0/supplier/config",
+    "method": "POST",
+    "postData": "{\"supplierId\":4402738}",
+    "response": {
+      "ads_demand_exp": {
+        "edit_input_soft_alert": {
+          "cpo": {
+            "heading": "Get more orders by increasing CPO",
+            "info": "Reducing CPO will lead to lower Orders"
+          },
+          "enabled": true,
+          "roi": {
+            "heading": "Get more orders by reducing ROI",
+            "info": "Increasing ROI will lead to lower Orders"
+          }
+        },
+        "is_edit_budget_button": true,
+        "show_budget_upsell_texts": true
+      },
+      "ads_gmv_max_cohort_roi": {
+        "banner": {
+          "CPO": {
+            "cta_text": "Create New Campaign",
+            "headline": "Set any cost per order for your ads",
+            "sub_headline": "Better Control, More Orders",
+            "title": "ROI Ads are now CPO Ads"
+          },
+          "ROI": {
+            "cta_text": "Create New Campaign",
+            "headline": "Set any ROI you want for your ads",
+            "sub_headline": "Better Control, More Orders",
+            "title": "ROI Ads are now ROI Plus ads"
+          }
+        },
+        "creation": {
+          "bid_type_selection": {
+            "default_selection": "GMV_MAX",
+            "header": "Bid Type",
+            "options": {
+              "cpc": {
+                "description": "Set CPC manually or let Meesho decide the best CPC for you",
+                "title": "CPC: Cost Per Click"
+              },
+              "gmv_max": {
+                "description": "Set your preferred ROI either at account level or catalog level.",
+                "title": "ROI Plus"
+              }
+            },
+            "subheader": "Select your bid type"
+          },
+          "budget": {
+            "budget_nudge": {
+              "high": {
+                "description": "",
+                "title": ""
+              },
+              "low": {
+                "description": "You might lose orders.",
+                "title": "Low Budget"
+              },
+              "recommended": {
+                "description": "",
+                "title": ""
+              }
+            },
+            "prefill_budget": true,
+            "subheader": "Set your daily campaign budget"
+          },
+          "catalog_selection": {
+            "catalog_selection_type": {
+              "auto_catalog": {
+                "subtext": "",
+                "text": "Meesho selects catalogs"
+              },
+              "manual_catalog": {
+                "subtext": "",
+                "text": "You select catalogs"
+              }
+            },
+            "default_selection": "none",
+            "feedback": {
+              "cpc_feedback": {
+                "average": "Low Visibility",
+                "bad": "Very Low Visibility",
+                "best": "Good Visibility",
+                "good": "Good Visibility",
+                "suggestion": "Meesho will select best CPC to maximise visibility"
+              },
+              "cpo_feedback": {
+                "average": "Low Visibility",
+                "bad": "Very Low Visibility",
+                "best": "Good Visibility",
+                "good": "Good Visibility"
+              },
+              "roi_feedback": {
+                "average": "Low Visibility",
+                "bad": "Very Low Visibility",
+                "best": "Good Visibility",
+                "good": "Good Visibility"
+              }
+            },
+            "ineligible_catalog": {
+              "description": "You can run CPC ads on this catalog.",
+              "title": "Very few orders, catalog is not eligible for this campaign."
+            },
+            "manual_flow": {
+              "auto_cpc": true,
+              "bid_increment": {
+                "cpc": 0.01,
+                "cpo": 1,
+                "roi": 1
+              },
+              "max_cpc_factor": 1.1,
+              "min_cpc_factor": 0.9
+            },
+            "out_of_stock": {
+              "description": "Ads cannot be run on out of stock catalogs.",
+              "title": "Out of Stock "
+            },
+            "subheader": "How do you want to choose your catalogs?"
+          },
+          "duration": {
+            "default_duration": -1,
+            "info_text": "",
+            "subheader": "Select how long you want to run this ad"
+          },
+          "gmv_bid_type": "ROI",
+          "is_enabled": true,
+          "smart_campaign_review_submit": [
+            "Catalogs will be selected automatically and will be visible after creation",
+            "Poor performing catalogs will be automatically paused to give better ROI",
+            "CPCs will be managed smartly for more views & clicks",
+            "Your selected min ROI is {{ROI}}"
+          ],
+          "summary_page": {
+            "info_text": ""
+          }
+        },
+        "management": {
+          "bid_increment": {
+            "cpc": 0.01,
+            "cpo": 1,
+            "roi": 1
+          },
+          "campaign_feedback_state": {
+            "empty": {
+              "description": "",
+              "title": "Optimizing"
+            },
+            "good": {
+              "days": 14,
+              "description": "",
+              "title": "Ad performing well"
+            },
+            "learning": {
+              "days": 3,
+              "description": "",
+              "title": "Learning"
+            },
+            "optimizing": {
+              "days": 7,
+              "description": "",
+              "title": "Optimizing"
+            },
+            "red_attention": {
+              "days": 2,
+              "description": "Get more orders by",
+              "title": "Low Orders"
+            },
+            "yellow_attention": {
+              "days": 5,
+              "description": "Reduce ROI to increase spends & get more visibility.",
+              "title": "Low Budget Spend"
+            }
+          },
+          "catalog_feedback_state": {
+            "empty": {
+              "description": "",
+              "title": "Optimizing"
+            },
+            "good": {
+              "days": 10,
+              "description": "",
+              "title": "Good"
+            },
+            "learning": {
+              "days": 2,
+              "description": "",
+              "title": "Learning"
+            },
+            "optimizing": {
+              "days": 5,
+              "description": "",
+              "title": "Optimizing"
+            },
+            "red_attention": {
+              "days": 1,
+              "description": "Get more orders by",
+              "title": "Low Orders"
+            },
+            "yellow_attention": {
+              "days": 3,
+              "description": "Reduce ROI to increase spends & get more visibility.",
+              "title": "Low Budget Spend"
+            }
+          },
+          "feedback": {
+            "cpc_feedback": {
+              "average": "Low Visibility",
+              "bad": "Very Low Visibility",
+              "best": "Good Visibility",
+              "good": "Good Visibility",
+              "suggestion": "Meesho will select best CPC to maximise visibility"
+            },
+            "cpo_feedback": {
+              "average": "Low Visibility",
+              "bad": "Very Low Visibility",
+              "best": "Good Visibility",
+              "good": "Good Visibility"
+            },
+            "roi_feedback": {
+              "average": "Low Visibility",
+              "bad": "Very Low Visibility",
+              "best": "Good Visibility",
+              "good": "Good Visibility"
+            }
+          },
+          "gmv_bid_type": "ROI",
+          "is_enable_manual_pause_campaign_button": false,
+          "is_enabled": true,
+          "max_cpc_factor": 1.1,
+          "min_cpc_factor": 0.9,
+          "overview_section": {
+            "cpo_tooltip_text": "Cost Per Order(CPO) means how much money you spend on ads to get one ad order.",
+            "roi_tooltip_text": "ROI is how much ad revenue you earn for every rupee spent on ads. Example: If you spend ₹1,000 and get ad orders worth ₹4,000, your ROI is 4."
+          },
+          "pause_info_text": {
+            "campaign_pause_info": {
+              "empty": "Campaign is optimizing. Wait for sometime to get the best results.",
+              "good": "Campaign is doing great. Keep it active to get more orders.",
+              "learning": "Campaign is learning. Wait for sometime to get the best results.",
+              "optimizing": "Campaign is optimizing. Wait for sometime to get the best results.",
+              "red_attention": "",
+              "yellow_attention": ""
+            },
+            "catalog_pause_info": {
+              "empty": "Catalog is optimizing. Wait for sometime to get the best results.",
+              "good": "Catalog is doing great. Keep it active to get more orders.",
+              "learning": "Catalog is learning. Wait for some time to get best results.",
+              "optimizing": "Catalog is optimizing. Wait for sometime to get the best results.",
+              "red_attention": "",
+              "yellow_attention": ""
+            }
+          },
+          "pause_reasons": {
+            "campaign_pause_reasons": [
+              "I'm not seeing order growth",
+              "I want higher ROI",
+              "My shop is temporarily closed",
+              "I'm experiencing stockout issues",
+              "I want to run ads on different campaign",
+              "The campaign budget is too high",
+              "I wanted to run ads for a specific duration only",
+              "Others"
+            ],
+            "catalog_pause_reasons": [
+              "I'm not seeing order growth",
+              "I want higher ROI",
+              "My shop is temporarily closed",
+              "I'm experiencing stockout issues",
+              "I want to run ads on different catalog",
+              "The campaign budget is too high",
+              "I wanted to run ads for a specific duration only",
+              "Others"
+            ]
+          },
+          "roi_plus_banner_feedback": {
+            "manual_campaign": {
+              "cpo": {
+                "RED_ATTENTION": {
+                  "description": "You can get more orders by increasing CPO",
+                  "title": "Low orders on some catalogs"
+                }
+              },
+              "roi": {
+                "RED_ATTENTION": {
+                  "description": "You can get more orders by reducing ROI",
+                  "title": "Low orders on some catalogs"
+                }
+              }
+            },
+            "smart_campaign": {
+              "cpo": {
+                "EMPTY": {
+                  "description": "No action is needed",
+                  "title": "Campaign is optimizing"
+                },
+                "GOOD": {
+                  "description": "",
+                  "title": "Campaign is performing well"
+                },
+                "LEARNING": {
+                  "description": "",
+                  "title": "Campaign is learning"
+                },
+                "OPTIMIZING": {
+                  "description": "No action is needed",
+                  "title": "Campaign is optimizing"
+                },
+                "RED_ATTENTION": {
+                  "description": "You can get more orders by increasing CPO",
+                  "title": "Low orders on some catalogs"
+                },
+                "YELLOW_ATTENTION": {
+                  "description": "",
+                  "title": ""
+                }
+              },
+              "roi": {
+                "EMPTY": {
+                  "description": "No action is needed",
+                  "title": "Campaign is optimizing"
+                },
+                "GOOD": {
+                  "description": "",
+                  "title": "Campaign is performing well"
+                },
+                "LEARNING": {
+                  "description": "No action is needed",
+                  "title": "Campaign is learning"
+                },
+                "OPTIMIZING": {
+                  "description": "No action is needed",
+                  "title": "Campaign is optimizing"
+                },
+                "RED_ATTENTION": {
+                  "description": "You can get more orders by reducing ROI",
+                  "title": "Low orders"
+                },
+                "YELLOW_ATTENTION": {
+                  "description": "",
+                  "title": ""
+                }
+              }
+            }
+          }
+        }
+      },
+      "ads_mma": {
+        "dates": [
+          "1st - 2nd Aug, 9th Aug"
+        ]
+      },
+      "ads_on_homepage_widget": {
+        "buttons": [
+          {
+            "screen": "create_campaign",
+            "title": "Create Campaign",
+            "type": "solid"
+          },
+          {
+            "screen": "advertisement_home",
+            "title": "Know More",
+            "type": "text"
+          }
+        ],
+        "description": "Your catalogs will be shown on top slots. No upfront Payment, pay only when buyers clicks on your Ads",
+        "imageUrl": "https://images.meesho.com/images/marketing/1747723810317.png",
+        "slot": 1,
+        "title": "Reach more buyers with Meesho Ads ",
+        "type": 1
+      },
+      "ads_on_inventory": {
+        "continueCtaText": "Continue",
+        "disclaimer": [
+          "Money spend will be deducted from payouts",
+          "You can pause ad anytime"
+        ],
+        "heading": "Boost orders with Advertisements",
+        "submitCtaText": "Submit Ad Campaign"
+      },
+      "ads_rearch": {
+        "restart": false
+      },
+      "ads_sale_consent": {
+        "banner": {
+          "create": {
+            "cta": "Add Budget",
+            "descriptionList": [
+              "Create campaigns to get more orders with ads",
+              "Increase budget on top sale campaigns"
+            ],
+            "heading": "Increase Ad budget & get up to 3x more orders (1st-2nd, 9th August MISS)",
+            "subtext": "Boost orders now!"
+          },
+          "edit": {
+            "cta": "Update consent",
+            "descriptionList": [
+              "Adjust your budget to reach more customers",
+              "Lower ROI to use full budget"
+            ],
+            "heading": "Update Your August MISS Sale Ads Consent",
+            "subtext": "Modify your campaign settings for better performance"
+          },
+          "is_enabled": true,
+          "is_mbs_sale": true,
+          "show_banner_logo": false
+        },
+        "budgetDivision": {
+          "cta": "Click to see how daily budget will vary",
+          "heading": "Budget Spend During Event",
+          "infoBar": "For best results, higher budget will be added on high traffic days for best results. Budget distribution as below:",
+          "show_budget_division": false
+        },
+        "consentModal": {
+          "create": {
+            "budget": {},
+            "calloutText": "1st-2nd, 9th August",
+            "cta": "Review & Continue",
+            "heading": "August MISS Sale",
+            "hide_roi_feedback": false,
+            "infoBar": {
+              "days_lable": "days",
+              "heading": "Total Consented Campaign Budget For Sale",
+              "sales": [
+                {
+                  "budgetDivisionPerDay": [
+                    "50%",
+                    "50%",
+                    "50%"
+                  ],
+                  "budgetFactor": 1,
+                  "endDate": "2026-08-02",
+                  "numberOfDays": "3",
+                  "saleName": "August MISS Sale",
+                  "startDate": "2026-08-01"
+                }
+              ]
+            },
+            "title": "Meesho will top up your existing campaign ROI Plus Auto Campaign/ creates a new campaign if you dont have one"
+          },
+          "edit": {
+            "confirmCta": "Save",
+            "optOUtCta": "Opt-out of August MISS Sale Ad Booster"
+          },
+          "is_manual_block_visible": true,
+          "optOut": {
+            "cta": "Opt Out",
+            "description": "You are about to miss one of the highest traffic events. Are you sure you want to skip this opportunity?",
+            "heading": "Confirm Opt-out from August MISS Sale Ad Booster?",
+            "infoBar": "Sale = more traffic → More visibility, orders, profits",
+            "modalTitle": "August MISS Sale Ad Booster"
+          },
+          "review": {
+            "cta": "Agree & Submit Campaign",
+            "defaultROIReductionConsent": false,
+            "infoBar": [
+              "Budget will be added to your existing ROI+ (Meesho Selects Catalog) campaign",
+              "If no ROI+ (Meesho Selects Catalog) campaign is live, a new campaign will be created with details you have set on prev page"
+            ],
+            "reductionConsent": "I consent up to {{reductionPercentage}} ROI reduction to maximize budget utilization and get more orders during sale",
+            "show_consent_checkbox": true
+          }
+        },
+        "consent_on_existing_campaign_enabled": true,
+        "table": {
+          "create": {
+            "title": "Add budget to get more orders during Sale"
+          },
+          "edit": {
+            "title": "Your budget will be utilised during Sale period only"
+          },
+          "info_bar": "Added budget will only be applicable on Sale duration 1st-2nd, 9th August 2026",
+          "is_enabled": true
+        },
+        "widget": {
+          "boostSection": {
+            "BUDGET_INCREASE": {
+              "cta": "Increase Budget",
+              "heading": "Boost orders by increasing budget on your existing ad campaigns"
+            },
+            "CREATE_CAMPAIGN": {
+              "cta": "Create Campaign",
+              "heading": "Get more orders by creating new ad campaigns"
+            },
+            "RED_ATTENTION": {
+              "cta": "Fix Now",
+              "heading": "Boost orders by fixing your existing ad campaigns"
+            }
+          },
+          "chartLabels": {
+            "categoryLabel": "Other Sellers in Category",
+            "supplierLabel": "Your performance"
+          },
+          "heading": {
+            "negative": {
+              "active_text": "{{delta}}% less orders",
+              "text": "You are getting {{active_text}} during Seasonal Ad Boost than other sellers in your category!"
+            },
+            "neutral": {
+              "active_text": "",
+              "text": "Get ahead of your similar sellers in your category by investing more on ads!"
+            },
+            "positive": {
+              "active_text": "{{delta}}% more orders",
+              "text": "You are getting {{active_text}} during Seasonal Ad Boost than other sellers in your category!"
+            }
+          },
+          "is_enabled": false
+        }
+      },
+      "dispatch_tag_expt": {},
+      "enable_product_listing_v2": "null",
+      "enable_return_correction": {
+        "banner": {
+          "description": "Your absolute returns have not changed. This is a more accurate return percentage number.",
+          "title": "Returns & RTO% only for orders where return window has closed"
+        },
+        "custom_date_info_bar": {
+          "message": "Select time period before 21 days to see your Returns percentage"
+        },
+        "is_enabled": true,
+        "video_url": "https://youtu.be/WVpMi51P5oQ",
+        "why_this_change": {
+          "reason_primary": "Some orders are still open for returns",
+          "reason_secondary": "Recent orders are not delivered yet",
+          "title": "Returns % will be shown for orders where return window has closed"
+        }
+      },
+      "enable_seller_agent": {
+        "enabled": false
+      },
+      "fe_rating_seller": {},
+      "fgo_vertical_calendar": {
+        "enabled": true
+      },
+      "gmv_max_credit": {
+        "cta_text": "Create {{bidtype}} plus Ad",
+        "expiry_date_delta": 3,
+        "headline": "Run improved {{bidtype}} plus ads with {{credits}} FREE Ad credits!",
+        "sub_headline": "You will get maximum orders at best possible {{bidtype}}"
+      },
+      "mpl_lite_seller": {},
+      "promotions_banner_config": {
+        "backgroundImage": "https://images.meesho.com/images/marketing/1783585300893.webp",
+        "bannerImage": {
+          "marginLeft": 40,
+          "src": "https://images.meesho.com/images/marketing/1783588312759.gif",
+          "width": 154
+        },
+        "enableRedirection": true,
+        "optinId": 441
+      },
+      "promotions_bulk_upload_xlsx": {
+        "enabled": false
+      },
+      "promotions_event_page_banner_config": {
+        "backgroundImage": "https://images.meesho.com/images/marketing/1783585300893.webp",
+        "enableRedirection": true,
+        "eventId": 1006,
+        "headerImage": {
+          "marginLeft": 20,
+          "src": "https://images.meesho.com/images/marketing/1783588312759.gif",
+          "width": 134
+        }
+      },
+      "promotions_flexi_growth_offers_banner_config": {
+        "bannerImages": [
+          "1767956299348.webp",
+          "1767956331263.webp"
+        ]
+      },
+      "promotions_flexi_growth_offers_csv_flow": {
+        "enabled": false
+      },
+      "promotions_new_panel": {
+        "enabled": true
+      },
+      "promotions_optin_page_banner_config": {
+        "backgroundImage": "https://images.meesho.com/images/marketing/1783585300893.webp",
+        "enableRedirection": true,
+        "headerImage": {
+          "marginLeft": 20,
+          "src": "https://images.meesho.com/images/marketing/1783588312759.gif",
+          "width": 134
+        },
+        "optinId": 18
+      },
+      "promotions_optin_revamp": {},
+      "promotions_optinid_mapping": {
+        "408": "11",
+        "409": "12",
+        "441": "18",
+        "442": "19",
+        "443": "20",
+        "444": "21",
+        "445": "22",
+        "446": "23"
+      },
+      "promotions_pagination_enabled": {},
+      "promotions_use_deal_discount_for_sale": {
+        "enabled": true
+      },
+      "promotions_zip_before_upload": {
+        "enabled": true
+      },
+      "rwe_payments_tooltip_visibility": {},
+      "sales_offer_homepage_card": {},
+      "seller_disp_policy_change_exp": {
+        "enabled": true,
+        "end_date": "30-11-2026",
+        "start_date": "11-05-2026"
+      },
+      "supplier_home_widget_1": {
+        "defaultProps": {
+          "fetchRequiredData": true
+        },
+        "moduleName": "./AdsOnHomepage",
+        "remoteName": "ads",
+        "slot": 1,
+        "type": 4
+      }
+    },
+    "status": 200
+  },
+  {
+    "url": "https://supplier.meesho.com/api/container/notices/fetch-unread-count",
+    "method": "POST",
+    "postData": "{\"countryId\":1,\"dateBefore\":\"2026-07-14\",\"identifier\":\"req4n\"}",
+    "response": {
+      "unread_count": 1
+    },
+    "status": 200
+  },
+  {
+    "url": "https://supplier.meesho.com/api/promotions/promotions/live-optin-event",
+    "method": "POST",
+    "postData": "{\"event_category\":\"SALE\",\"status\":\"UPCOMING\",\"supplier_id\":4402738}",
+    "response": {
+      "results": {
+        "id": 441,
+        "name": "Maha Indian Savings Sale",
+        "opt_in_end_date": "2026-07-17T23:59:59",
+        "image_url": "https://images.meesho.com/events/event-1783420091568.png",
+        "event_category": "SALE"
+      }
+    },
+    "status": 200
+  },
+  {
+    "url": "https://supplier.meesho.com/api/container/supplier/fetch-total-count",
+    "method": "POST",
+    "postData": "{\"payload\":[\"CATALOG_MANAGEMENT\",\"QUALITY_DASHBOARD\"],\"supplier_id\":4402738,\"identifier\":\"req4n\"}",
+    "response": {
+      "data": {
+        "catalog_management_nudge_value": 7,
+        "catalog_management_nudge_key": "out_of_stock"
+      }
+    },
+    "status": 200
+  },
+  {
+    "url": "https://supplier.meesho.com/api/cataloging/singleCatalogUpload/getFormConfig",
+    "method": "POST",
+    "postData": "{\"sscat_id\":10000,\"supplier_id\":4402738,\"identifier\":\"req4n\"}",
+    "response": {
+      "error": "Not Found"
+    },
+    "status": 404
+  },
+  {
+    "url": "https://web-sdk-ingestion.deng.meeshogcp.in/track/?verbose=1&ip=1&_=1784232435185&PROJECT-TOKEN=a66867feba42257f4b46689d52d48f86",
+    "method": "POST",
+    "postData": "data=%5B%0A%20%20%20%20%7B%22event%22%3A%20%22%24identify%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22dclwp2rh0gyhi7l0%22%2C%22time%22%3A%201784232430.184%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22%24anon_distinct_id%22%3A%20%22req4n%22%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%22Supplier%20Panel%20Partial%20SSR%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%222tk0i5xdsor9jio5%22%2C%22time%22%3A%201784232430.184%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22supplier_data%22%3A%20false%2C%22user_data%22%3A%20false%2C%22supplier_warehouse_mapping_data%22%3A%20false%2C%22registration_status_data%22%3A%20false%2C%22container_client_version%22%3A%20%221.0.36%22%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%22%24identify%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22uoblwoi344f6iomd%22%2C%22time%22%3A%201784232430.184%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22%24anon_distinct_id%22%3A%20%22req4n%22%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%221C%20Trigger%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22dzgdvy5t9pdkxie1%22%2C%22time%22%3A%201784232430.185%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22routedTo1C%22%3A%20null%2C%22container_client_version%22%3A%20%221.0.36%22%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%22Webvital%20Score%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22ooekhss6nagvtw3u%22%2C%22time%22%3A%201784232430.228%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22Event%20Name%22%3A%20%22FCP%22%2C%22Event%20Value%22%3A%20120%2C%22Event%20Id%22%3A%20%22v4-1784232430201-7802477568046%22%2C%22Connection%20Type%22%3A%20%224g%22%2C%22Browser%20URL%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22page_name%22%3A%20%22CATALOGING_CATALOGS_SINGLE_CREATE%22%2C%22event_id%22%3A%20%22v4-1784232430201-7802477568046%22%2C%22event_name%22%3A%20%22FCP%22%2C%22event_value%22%3A%20120%2C%22browser_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22connection_type%22%3A%20%224g%22%2C%22created_at%22%3A%201784232430228%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%22Webvital%20Score%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22zktlllc4h8ahzhy5%22%2C%22time%22%3A%201784232430.24%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22Event%20Name%22%3A%20%22TTFB%22%2C%22Event%20Value%22%3A%2040%2C%22Event%20Id%22%3A%20%22v4-1784232430201-8223941512475%22%2C%22Connection%20Type%22%3A%20%224g%22%2C%22Browser%20URL%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22page_name%22%3A%20%22CATALOGING_CATALOGS_SINGLE_CREATE%22%2C%22event_id%22%3A%20%22v4-1784232430201-8223941512475%22%2C%22event_name%22%3A%20%22TTFB%22%2C%22event_value%22%3A%2040%2C%22browser_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22connection_type%22%3A%20%224g%22%2C%22created_at%22%3A%201784232430240%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%22Panel%20Opened%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22c72ow3f3ohjntkco%22%2C%22time%22%3A%201784232430.297%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22gst_type%22%3A%20%22ENROLMENT%22%2C%22container_client_version%22%3A%20%221.0.36%22%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%22Supplier%20Panel%20Partial%20SSR%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22c1wngxw0pod31r5s%22%2C%22time%22%3A%201784232430.298%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22supplier_data%22%3A%20true%2C%22user_data%22%3A%20true%2C%22supplier_warehouse_mapping_data%22%3A%20false%2C%22registration_status_data%22%3A%20true%2C%22user_role_super%22%3A%20%22user%22%2C%22user_id_super%22%3A%20%22e7ac5d82-41e9-4dc2-99ff-7ecd07f3db03%22%2C%22gst_type%22%3A%20%22ENROLMENT%22%2C%22container_client_version%22%3A%20%221.0.36%22%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%22Webvital%20Score%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22cmznv5x2e9wyn55d%22%2C%22time%22%3A%201784232430.334%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22Event%20Name%22%3A%20%22PageLoadTime%22%2C%22event_name%22%3A%20%22PageLoadTime%22%2C%22Event%20Value%22%3A%20250%2C%22event_value%22%3A%20250%2C%22Event%20Id%22%3A%20%22cataloging%22%2C%22event_id%22%3A%20%22cataloging%22%2C%22target_element%22%3A%20%22cataloging%22%2C%22browser_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22Browser%20URL%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22page_name%22%3A%20%22CATALOGING_CATALOGS_SINGLE_CREATE%22%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%2C%0A%20%20%20%20%7B%22event%22%3A%20%221C%20Trigger%22%2C%22properties%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24current_url%22%3A%20%22https%3A%2F%2Fsupplier.meesho.com%2Fpanel%2Fv3%2Fnew%2Fcataloging%2Freq4n%2Fcatalogs%2Fsingle%2Fcreate%3Fsscat%3D10000%22%2C%22%24browser_version%22%3A%20150%2C%22%24screen_height%22%3A%201080%2C%22%24screen_width%22%3A%201920%2C%22mp_lib%22%3A%20%22web%22%2C%22%24lib_version%22%3A%20%222.45.0%22%2C%22%24insert_id%22%3A%20%22jppaq8nwuap7zast%22%2C%22time%22%3A%201784232430.419%2C%22distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22%24user_id%22%3A%20%22req4n%22%2C%22client_type%22%3A%20%22d-web%22%2C%22source%22%3A%20%22Direct%22%2C%22medium%22%3A%20%22Direct%22%2C%22campaign%22%3A%20%22Direct%22%2C%22initial_distinct_id%22%3A%20%22Direct%22%2C%22_fbp%22%3A%20null%2C%22_fbc%22%3A%20null%2C%22userAgent%22%3A%20%22Mozilla%2F5.0%20(Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F150.0.0.0%20Safari%2F537.36%22%2C%22Supplier_id%22%3A%204402738%2C%22Supplier_tag%22%3A%20%22req4n%22%2C%22M_Trusted%22%3A%20false%2C%22uploadStatus%22%3A%20%22StepperStepComplete%22%2C%22gstinVerificationStatus%22%3A%20true%2C%22bankDetailsStatus%22%3A%20%22approved%22%2C%22routedTo1C%22%3A%20null%2C%22user_role_super%22%3A%20%22user%22%2C%22user_id_super%22%3A%20%22e7ac5d82-41e9-4dc2-99ff-7ecd07f3db03%22%2C%22gst_type%22%3A%20%22ENROLMENT%22%2C%22container_client_version%22%3A%20%221.0.36%22%2C%22token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%7D%7D%0A%5D",
+    "response": {
+      "error": null,
+      "status": 1
+    },
+    "status": 200
+  },
+  {
+    "url": "https://web-sdk-ingestion.deng.meeshogcp.in/engage/?verbose=1&ip=1&_=1784232435186&PROJECT-TOKEN=a66867feba42257f4b46689d52d48f86",
+    "method": "POST",
+    "postData": "data=%5B%0A%20%20%20%20%7B%22%24set%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24browser_version%22%3A%20150%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%7D%2C%22%24token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%2C%22%24distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24user_id%22%3A%20%22req4n%22%7D%2C%0A%20%20%20%20%7B%22%24set%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24browser_version%22%3A%20150%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%7D%2C%22%24token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%2C%22%24distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24user_id%22%3A%20%22req4n%22%7D%2C%0A%20%20%20%20%7B%22%24set%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24browser_version%22%3A%20150%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22identifier%22%3A%20%22req4n%22%2C%22%24name%22%3A%20%22DexForge%22%2C%22%24phone%22%3A%20%228898192066%22%2C%22%24email%22%3A%20%22girisukinkar%40gmail.com%22%7D%2C%22%24token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%2C%22%24distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24user_id%22%3A%20%22req4n%22%7D%2C%0A%20%20%20%20%7B%22%24set%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24browser_version%22%3A%20150%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22identifier%22%3A%20%22req4n%22%2C%22%24name%22%3A%20%22DexForge%22%2C%22%24phone%22%3A%20%228898192066%22%2C%22%24email%22%3A%20%22girisukinkar%40gmail.com%22%7D%2C%22%24token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%2C%22%24distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24user_id%22%3A%20%22req4n%22%7D%2C%0A%20%20%20%20%7B%22%24set%22%3A%20%7B%22%24os%22%3A%20%22Mac%20OS%20X%22%2C%22%24browser%22%3A%20%22Chrome%22%2C%22%24browser_version%22%3A%20150%2C%22%24initial_referrer%22%3A%20%22%24direct%22%2C%22%24initial_referring_domain%22%3A%20%22%24direct%22%2C%22identifier%22%3A%20%22req4n%22%2C%22%24name%22%3A%20%22DexForge%22%2C%22%24phone%22%3A%20%228898192066%22%2C%22%24email%22%3A%20%22girisukinkar%40gmail.com%22%7D%2C%22%24token%22%3A%20%22a66867feba42257f4b46689d52d48f86%22%2C%22%24distinct_id%22%3A%20%22req4n%22%2C%22%24device_id%22%3A%20%2219f6c49926d2087-07c2207262e0a1-1f525630-1fa400-19f6c49926e41ea%22%2C%22%24user_id%22%3A%20%22req4n%22%7D%0A%5D",
+    "response": {
+      "error": null,
+      "status": 1
+    },
+    "status": 200
+  },
+  {
+    "url": "https://supplier.meesho.com/api/cataloging/singleCatalogUpload/getAttributeConfig",
+    "method": "POST",
+    "postData": "{\"sscat_id\":10000,\"supplier_id\":4402738}",
+    "response": {
+      "error": "Not Found"
+    },
+    "status": 404
+  },
+  {
+    "url": "https://supplier.meesho.com/api/cataloging/singleCatalogUpload/getProductForm",
+    "method": "POST",
+    "postData": "{\"sscat_id\":10000,\"supplier_id\":4402738}",
+    "response": {
+      "error": "Not Found"
+    },
+    "status": 404
+  },
+  {
+    "url": "https://supplier.meesho.com/api/cataloging/catalog-upload/get-form-config",
+    "method": "POST",
+    "postData": "{\"sscat_id\":10000,\"supplier_id\":4402738}",
+    "response": {
+      "error": "Not Found"
+    },
+    "status": 404
+  },
+  {
+    "url": "https://supplier.meesho.com/api/cataloging/catalog-upload/form-config",
+    "method": "POST",
+    "postData": "{\"sscat_id\":10000,\"supplier_id\":4402738}",
+    "response": {
+      "error": "Not Found"
+    },
+    "status": 404
+  },
+  {
+    "url": "https://supplier.meesho.com/api/cataloging/singleCatalogUpload/getProductAttributes",
+    "method": "POST",
+    "postData": "{\"sscat_id\":10000,\"supplier_id\":4402738,\"identifier\":\"req4n\"}",
+    "response": {
+      "error": "Not Found"
+    },
+    "status": 404
+  },
+  {
+    "url": "https://supplier.meesho.com/api/cataloging/catalog-upload/product-attributes",
+    "method": "POST",
+    "postData": "{\"sscat_id\":10000,\"supplier_id\":4402738}",
+    "response": {
+      "error": "Not Found"
+    },
+    "status": 404
+  },
+  {
+    "url": "https://supplier.meesho.com/api/cataloging/singleCatalogUpload/getCategoryForm",
+    "method": "POST",
+    "postData": "{\"sscat_id\":10000,\"supplier_id\":4402738}"
+  }
+]

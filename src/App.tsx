@@ -5,7 +5,9 @@ import { Orders } from './pages/Orders';
 import { Quotations } from './pages/Quotations';
 import { Settings } from './pages/Settings';
 import { FilamentInventory } from './pages/FilamentInventory';
-import { Database, ShoppingBag, FileText, Layers, Settings as SettingsIcon } from 'lucide-react';
+import { MeeshoCategories } from './pages/MeeshoCategories';
+import { ProfitCalculator } from './pages/ProfitCalculator';
+import { Database, ShoppingBag, FileText, Layers, Settings as SettingsIcon, Store, Calculator } from 'lucide-react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,6 +68,17 @@ function AppContent() {
               Filaments
             </NavLink>
             <NavLink
+              to="/meesho-categories"
+              className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                isActive
+                  ? 'border-orange-500/30 bg-orange-500/10 text-orange-400 font-bold'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
+              }`}
+            >
+              <Store className="h-3.5 w-3.5" />
+              Meesho
+            </NavLink>
+            <NavLink
               to="/quotations"
               className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                 isActive
@@ -75,6 +88,17 @@ function AppContent() {
             >
               <FileText className="h-3.5 w-3.5" />
               Quotations
+            </NavLink>
+            <NavLink
+              to="/calculator"
+              className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                isActive
+                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400 font-bold'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
+              }`}
+            >
+              <Calculator className="h-3.5 w-3.5" />
+              Calculator
             </NavLink>
             <NavLink
               to="/settings"
@@ -99,6 +123,8 @@ function AppContent() {
           <Route path="/quotations" element={<Quotations />} />
           <Route path="/quotations/:id" element={<Quotations />} />
           <Route path="/filament-inventory" element={<FilamentInventory />} />
+          <Route path="/meesho-categories" element={<MeeshoCategories />} />
+          <Route path="/calculator" element={<ProfitCalculator />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/products" replace />} />
         </Routes>
