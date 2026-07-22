@@ -185,29 +185,40 @@ export const Catalog: React.FC = () => {
     showToast('Deselected all items');
   };
 
+  // Delete confirm state
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
   // Permanent Product Deletion (Directly in Supabase)
   const handleDeleteProduct = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to permanently delete "${name}" from your catalog?`)) {
-      // Optimistic UI update
-      setItems((prev) => prev.filter((item) => item.id !== id));
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-
-      if (isSupabaseConfigured) {
-        const { error } = await supabase.from('products').delete().eq('id', id);
-        if (error) {
-          console.error('Supabase delete error:', error);
-          showToast(`Delete failed on Supabase: ${error.message}`);
-          fetchProductsFromSupabase();
-          return;
-        }
-      }
-
-      showToast(`Permanently deleted "${name}" from Supabase`);
+    if (deleteConfirmId !== id) {
+      setDeleteConfirmId(id);
+      setTimeout(() => {
+        setDeleteConfirmId((current) => (current === id ? null : current));
+      }, 4000);
+      return;
     }
+
+    setDeleteConfirmId(null);
+
+    // Optimistic UI update
+    setItems((prev) => prev.filter((item) => item.id !== id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) {
+        console.error('Supabase delete error:', error);
+        showToast(`Delete failed on Supabase: ${error.message}`);
+        fetchProductsFromSupabase();
+        return;
+      }
+    }
+
+    showToast(`Permanently deleted "${name}" from Supabase`);
   };
 
   // Price Input Change (Directly saved to Supabase in real-time)
@@ -552,11 +563,15 @@ export const Catalog: React.FC = () => {
                         e.stopPropagation();
                         handleDeleteProduct(item.id, item.name);
                       }}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-950/40 text-red-400 border border-red-900/50 text-[10px] font-semibold hover:bg-red-900 hover:text-white transition-colors"
-                      title="Permanently delete product from Supabase database"
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+                        deleteConfirmId === item.id
+                          ? 'bg-red-600 text-white animate-pulse border border-red-500 scale-105 shadow-md shadow-red-500/30'
+                          : 'bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900 hover:text-white'
+                      }`}
+                      title={deleteConfirmId === item.id ? 'Click again to confirm deletion' : 'Delete product from database'}
                     >
                       <Trash2 className="h-3 w-3" />
-                      <span>Delete Product</span>
+                      <span>{deleteConfirmId === item.id ? 'Confirm Delete?' : 'Delete Product'}</span>
                     </button>
                   </div>
 
