@@ -30,3 +30,11 @@
     margin: 15mm;
   }
 }
+
+/* Offscreen Card Deferred Rendering Optimization */
+@supports (content-visibility: auto) {
+  .deferred-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 540px;
+  }
+}

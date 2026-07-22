@@ -380,16 +380,21 @@ export const Catalog: React.FC = () => {
     }));
   };
 
-  // Filter items
-  const filteredItems = items.filter((item) => {
-    return item.name.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  // Memoized search filtering & stats for performance
+  const filteredItems = React.useMemo(() => {
+    if (!searchQuery.trim()) return items;
+    const q = searchQuery.toLowerCase();
+    return items.filter((item) => item.name.toLowerCase().includes(q));
+  }, [items, searchQuery]);
 
-  const totalValue = items.reduce((acc, curr) => {
-    const p = typeof curr.price === 'number' ? curr.price : parseFloat(curr.price as string);
-    return acc + (isNaN(p) ? 0 : p);
-  }, 0);
-  const avgPrice = items.length > 0 ? (totalValue / items.length).toFixed(0) : '0';
+  const avgPrice = React.useMemo(() => {
+    if (items.length === 0) return '0';
+    const totalValue = items.reduce((acc, curr) => {
+      const p = typeof curr.price === 'number' ? curr.price : parseFloat(curr.price as string);
+      return acc + (isNaN(p) ? 0 : p);
+    }, 0);
+    return (totalValue / items.length).toFixed(0);
+  }, [items]);
 
   return (
     <div className="min-h-screen bg-neutral-950 px-4 py-8 md:px-8 text-neutral-100 selection:bg-purple-500/30 selection:text-purple-200 print:bg-white print:text-black print:p-0">
@@ -557,7 +562,7 @@ export const Catalog: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 print:grid-cols-2 print:gap-6">
-            {filteredItems.map((item) => {
+            {filteredItems.map((item, idx) => {
               const isSelected = selectedIds.has(item.id);
               const activeImgIdx = activeImageIndexMap[item.id] || 0;
               const hasImages = item.images && item.images.length > 0;
@@ -568,7 +573,7 @@ export const Catalog: React.FC = () => {
               return (
                 <div
                   key={item.id}
-                  className={`group relative flex flex-col rounded-2xl border bg-neutral-900/30 overflow-hidden transition-all duration-300 ${
+                  className={`deferred-card group relative flex flex-col rounded-2xl border bg-neutral-900/30 overflow-hidden transition-all duration-300 ${
                     isSelected
                       ? 'border-purple-500/50 shadow-xl shadow-purple-500/5'
                       : 'border-neutral-900 opacity-60 hover:opacity-100'
@@ -613,6 +618,11 @@ export const Catalog: React.FC = () => {
                     <img
                       src={currentImgSrc}
                       alt={item.name}
+                      width="400"
+                      height="400"
+                      loading={idx < 4 ? 'eager' : 'lazy'}
+                      decoding="async"
+                      fetchPriority={idx < 4 ? 'high' : 'auto'}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
                         (e.target as HTMLElement).setAttribute(
