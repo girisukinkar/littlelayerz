@@ -221,22 +221,55 @@ export const Catalog: React.FC = () => {
     showToast(`Permanently deleted "${name}" from Supabase`);
   };
 
-  // Price Input Change (Directly saved to Supabase in real-time)
-  const handlePriceInputChange = async (id: string, val: string) => {
+  // Debounce timers map for price input network requests
+  const priceDebounceTimers = React.useRef<Record<string, any>>({});
+
+  // Price Input Change (Instant local state update + 600ms debounced Supabase API call)
+  const handlePriceInputChange = (id: string, val: string) => {
     const updatedPrice = val.trim() === '' ? '' : val;
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, price: updatedPrice } : item))
     );
 
-    if (isSupabaseConfigured) {
-      const priceNum = val.trim() === '' ? 0 : parseFloat(val) || 0;
-      const { error } = await supabase
-        .from('products')
-        .update({ selling_price: priceNum })
-        .eq('id', id);
+    // Clear previous pending debounce timer for this product
+    if (priceDebounceTimers.current[id]) {
+      clearTimeout(priceDebounceTimers.current[id]);
+    }
 
-      if (error) {
-        console.error('Supabase price update error:', error);
+    // Debounce Supabase API call by 600ms so typing 150 only sends 1 final request
+    priceDebounceTimers.current[id] = setTimeout(async () => {
+      delete priceDebounceTimers.current[id];
+      if (isSupabaseConfigured) {
+        const priceNum = val.trim() === '' ? 0 : parseFloat(val) || 0;
+        const { error } = await supabase
+          .from('products')
+          .update({ selling_price: priceNum })
+          .eq('id', id);
+
+        if (error) {
+          console.error('Supabase price update error:', error);
+        }
+      }
+    }, 600);
+  };
+
+  // Immediate flush on input blur
+  const handlePriceInputBlur = async (id: string, currentPriceVal: number | string) => {
+    if (priceDebounceTimers.current[id]) {
+      clearTimeout(priceDebounceTimers.current[id]);
+      delete priceDebounceTimers.current[id];
+
+      if (isSupabaseConfigured) {
+        const priceStr = String(currentPriceVal).trim();
+        const priceNum = priceStr === '' ? 0 : parseFloat(priceStr) || 0;
+        const { error } = await supabase
+          .from('products')
+          .update({ selling_price: priceNum })
+          .eq('id', id);
+
+        if (error) {
+          console.error('Supabase price update error on blur:', error);
+        }
       }
     }
   };
@@ -717,6 +750,7 @@ export const Catalog: React.FC = () => {
                             inputMode="decimal"
                             value={item.price ?? ''}
                             onChange={(e) => handlePriceInputChange(item.id, e.target.value)}
+                            onBlur={() => handlePriceInputBlur(item.id, item.price)}
                             className="w-24 rounded-lg bg-neutral-950 border border-neutral-800 px-2 py-1 text-sm font-bold text-emerald-400 print:bg-transparent print:border-none print:text-slate-900 print:p-0 print:text-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
                             placeholder="0"
                           />
