@@ -247,7 +247,7 @@ export const Catalog: React.FC = () => {
               <span className="text-xs text-neutral-500">• {items.length} Models Loaded</span>
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-neutral-50 bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent mt-1">
-              Kids Puzzle 3D Catalog
+              All 3D Catalog
             </h1>
             <p className="text-sm text-neutral-400 mt-1">
               Select products for your PDF catalog, set custom prices, clean photo galleries, or permanently delete unwanted products.

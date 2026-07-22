@@ -55,7 +55,7 @@ function AppContent() {
               }`}
             >
               <Grid className="h-3.5 w-3.5 text-purple-400" />
-              Kids Catalog
+              All Catalog
             </NavLink>
             <NavLink
               to="/orders"

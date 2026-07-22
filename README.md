@@ -1,73 +1,111 @@
-# React + TypeScript + Vite
+# Dexter3D ERP & MakerWorld Catalog Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An e-commerce ERP, product management system, and automated **MakerWorld 3D Model Scraper** built with React, Vite, Tailwind CSS, Playwright, and Node.js.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🌟 Key Features
 
-## React Compiler
+- **All 3D Catalog (`/catalog`)**:
+  - Displays all scraped MakerWorld 3D models with high-resolution multi-photo showcases.
+  - **Inline & Batch Price Editing**: Customize retail selling prices per product or apply a uniform base price across all items.
+  - **Individual Photo Deletion**: Hover over any thumbnail or photo banner to remove unwanted images before exporting.
+  - **Product Selection**: Select or deselect specific items to include in your customized catalog.
+  - **PDF Catalog Export**: Generates a clean A4 print & PDF document with multi-angle showcase photo galleries and high-contrast price tags.
+  - **Permanent Product Deletion**: Easily purge unwanted items from your catalog.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **MakerWorld Scraper Integration**:
+  - Incremental collection scraping (automatically skips already scraped models).
+  - High-resolution photo gallery extraction.
+  - Automatic filtering of MakerWorld point/boost diamond icons (< 60 KB).
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Quick Start
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 1. Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Ensure dependencies are installed:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Development Server
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Run the Vite development server:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Open [http://localhost:5173/catalog](http://localhost:5173/catalog) in your browser to view the **All Catalog** page.
+
+---
+
+## 🕷️ MakerWorld Collection Scraper
+
+The scraper script allows you to pass **any MakerWorld collection URL**. It compares items against the existing catalog database (`src/data/catalog_puzzles.json`), **skips already scraped products**, downloads showcase photos for new items, and appends them to your catalog.
+
+### Running the Scraper
+
+To scrape a new or updated MakerWorld collection URL:
+
+```bash
+node scrape_makerworld_collection.cjs "https://makerworld.com/en/collections/YOUR_COLLECTION_ID"
+```
+
+If no URL is provided, it defaults to the Kids Puzzle collection:
+
+```bash
+node scrape_makerworld_collection.cjs
+```
+
+### How Incremental Scraping Works:
+1. Connects to the browser via Chrome DevTools Protocol (`http://127.0.0.1:9222`) or Chromium.
+2. Scrolls through the collection page to extract all model cards.
+3. Compares all model IDs against existing entries in `src/data/catalog_puzzles.json`.
+4. **Skips** any model already present in the catalog.
+5. Downloads high-res model photos for new items into `public/images/catalog/<slug>/`.
+6. Filters out small diamond/boost icons (< 60 KB).
+7. Appends new product records to `src/data/catalog_puzzles.json`.
+
+---
+
+## 🛠️ Agent Skill: `makerworld-scraper`
+
+A custom agent skill is registered in `.agents/skills/makerworld-scraper/SKILL.md`.
+
+You can trigger this skill in your AI assistant workflow whenever you provide a MakerWorld collection URL to automatically scrape new models, update product photo galleries, and manage catalog items.
+
+---
+
+## 📦 Project Structure
+
+```
+ERP/
+├── .agents/
+│   └── skills/
+│       └── makerworld-scraper/
+│           └── SKILL.md            # Agent skill definition
+├── public/
+│   └── images/
+│       └── catalog/                # Downloaded model showcase photos
+├── src/
+│   ├── data/
+│   │   └── catalog_puzzles.json    # Master product catalog database
+│   ├── pages/
+│   │   ├── Catalog.tsx             # All 3D Catalog page component
+│   │   ├── Products.tsx
+│   │   └── Orders.tsx
+│   └── App.tsx
+├── scrape_makerworld_collection.cjs # CLI MakerWorld scraper script
+├── fix_catalog_images.cjs          # Photo filtering utility
+└── README.md
+```
+
+---
+
+## 📄 License
+
+MIT License. Designed for Dexter3D ERP.
