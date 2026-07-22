@@ -55,33 +55,31 @@ export const Catalog: React.FC = () => {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load persisted catalog from localStorage or fallback to scraped JSON
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const hasOldDiamondIcon = parsed.some((item: any) =>
-            item.main_image?.includes('image_1.png') ||
-            (item.images && item.images[0]?.includes('image_1.png'))
-          );
-          if (!hasOldDiamondIcon) {
-            setItems(parsed);
-            setSelectedIds(new Set(parsed.map((i: CatalogItem) => i.id)));
-            return;
-          }
-        }
-      } catch (e) {
-        // fallback
-      }
-    }
-
     import('../data/catalog_puzzles.json')
       .then((module) => {
         if (Array.isArray(module.default) && module.default.length > 0) {
-          const loadedItems = module.default as CatalogItem[];
-          setItems(loadedItems);
-          setSelectedIds(new Set(loadedItems.map((i) => i.id)));
+          const jsonItems = module.default as CatalogItem[];
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                const itemMap = new Map<string, CatalogItem>();
+                // First populate with JSON database
+                jsonItems.forEach(i => itemMap.set(i.id, i));
+                // Then overlay custom user pricing/deletions from localStorage
+                parsed.forEach((i: CatalogItem) => itemMap.set(i.id, i));
+                const merged = Array.from(itemMap.values());
+                setItems(merged);
+                setSelectedIds(new Set(merged.map((i) => i.id)));
+                return;
+              }
+            } catch (e) {
+              // fallback
+            }
+          }
+          setItems(jsonItems);
+          setSelectedIds(new Set(jsonItems.map((i) => i.id)));
         }
       })
       .catch((err) => {
