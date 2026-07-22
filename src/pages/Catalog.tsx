@@ -179,15 +179,27 @@ export const Catalog: React.FC = () => {
   };
 
   const handlePriceInputChange = (id: string, val: string) => {
+    const targetItem = items.find((i) => i.id === id);
     const updated = items.map((item) => {
       if (item.id !== id) return item;
-      // Allow empty string so the whole price field can be cleared!
       if (val.trim() === '') return { ...item, price: '' };
       
       const num = parseFloat(val);
       return { ...item, price: isNaN(num) ? '' : val };
     });
     saveItemsToStorage(updated);
+
+    // Sync price directly to Supabase if configured
+    if (isSupabaseConfigured && targetItem) {
+      const priceNum = val.trim() === '' ? 0 : parseFloat(val) || 0;
+      supabase
+        .from('products')
+        .update({ selling_price: priceNum })
+        .eq('name', targetItem.name)
+        .then(({ error }) => {
+          if (error) console.warn('Supabase price update error:', error.message);
+        });
+    }
   };
 
   const handleApplyBulkPrice = () => {
@@ -201,6 +213,20 @@ export const Catalog: React.FC = () => {
     saveItemsToStorage(updated);
     setIsBulkModalOpen(false);
     showToast(`Updated all ${items.length} items to ₹${newPrice}!`);
+
+    // Sync bulk price to Supabase if configured
+    if (isSupabaseConfigured) {
+      const dbPayload = updated.map((item) => ({
+        name: item.name,
+        selling_price: newPrice,
+      }));
+      supabase
+        .from('products')
+        .upsert(dbPayload, { onConflict: 'name' })
+        .then(({ error }) => {
+          if (error) console.warn('Supabase bulk price update error:', error.message);
+        });
+    }
   };
 
   const handleDeleteImage = (itemId: string, imgIdxToDelete: number) => {
