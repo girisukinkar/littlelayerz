@@ -7,7 +7,8 @@ import { Settings } from './pages/Settings';
 import { FilamentInventory } from './pages/FilamentInventory';
 import { MeeshoCategories } from './pages/MeeshoCategories';
 import { ProfitCalculator } from './pages/ProfitCalculator';
-import { Database, ShoppingBag, FileText, Layers, Settings as SettingsIcon, Store, Calculator } from 'lucide-react';
+import { Catalog } from './pages/Catalog';
+import { Database, ShoppingBag, FileText, Layers, Settings as SettingsIcon, Store, Calculator, Grid } from 'lucide-react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,7 +34,7 @@ function AppContent() {
             </span>
           </div>
 
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5 flex-wrap">
             <NavLink
               to="/products"
               className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
@@ -44,6 +45,17 @@ function AppContent() {
             >
               <Database className="h-3.5 w-3.5" />
               Products
+            </NavLink>
+            <NavLink
+              to="/catalog"
+              className={({ isActive }) => `flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                isActive
+                  ? 'border-purple-500/30 bg-purple-500/10 text-purple-400 font-bold'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
+              }`}
+            >
+              <Grid className="h-3.5 w-3.5 text-purple-400" />
+              Kids Catalog
             </NavLink>
             <NavLink
               to="/orders"
@@ -119,6 +131,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Navigate to="/products" replace />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/catalog" element={<Catalog />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/quotations" element={<Quotations />} />
           <Route path="/quotations/:id" element={<Quotations />} />

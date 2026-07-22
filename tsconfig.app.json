@@ -16,6 +16,7 @@
     "jsx": "react-jsx",
 
     /* Linting */
+    "resolveJsonModule": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
