@@ -4,7 +4,6 @@ import {
   X,
   ExternalLink,
   Tag,
-  Layers,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -16,7 +15,8 @@ import {
   Trash2,
   CheckSquare,
   Square,
-  Database
+  Database,
+  Radio
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -37,21 +37,10 @@ export interface CatalogItem {
   created_at: string;
 }
 
-const STORAGE_KEY = 'dexter3d_catalog_kids_puzzles';
-const DELETED_IDS_KEY = 'dexter3d_deleted_catalog_ids';
-
-const getDeletedIds = (): Set<string> => {
-  try {
-    const saved = localStorage.getItem(DELETED_IDS_KEY);
-    return new Set(saved ? JSON.parse(saved) : []);
-  } catch (e) {
-    return new Set();
-  }
-};
-
 export const Catalog: React.FC = () => {
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Selected items for PDF export
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -66,63 +55,113 @@ export const Catalog: React.FC = () => {
   // Toast alert message
   const [toast, setToast] = useState<string | null>(null);
 
-  // Syncing state
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  useEffect(() => {
-    import('../data/catalog_puzzles.json')
-      .then((module) => {
-        if (Array.isArray(module.default) && module.default.length > 0) {
-          const deletedIds = getDeletedIds();
-          const jsonItems = (module.default as CatalogItem[]).filter(
-            (i) => !deletedIds.has(i.id)
-          );
-
-          const saved = localStorage.getItem(STORAGE_KEY);
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved);
-              if (Array.isArray(parsed)) {
-                // Filter out deleted items from saved localStorage state
-                const validSaved = parsed.filter((i: CatalogItem) => !deletedIds.has(i.id));
-                const itemMap = new Map<string, CatalogItem>();
-                
-                // First populate with default JSON database
-                jsonItems.forEach((i) => itemMap.set(i.id, i));
-                
-                // Then overlay custom user pricing/edits from localStorage
-                validSaved.forEach((i: CatalogItem) => itemMap.set(i.id, i));
-                
-                const merged = Array.from(itemMap.values()).filter(
-                  (i) => !deletedIds.has(i.id)
-                );
-                
-                setItems(merged);
-                setSelectedIds(new Set(merged.map((i) => i.id)));
-                return;
-              }
-            } catch (e) {
-              // fallback
-            }
-          }
-          setItems(jsonItems);
-          setSelectedIds(new Set(jsonItems.map((i) => i.id)));
-        }
-      })
-      .catch((err) => {
-        console.warn('Scraped catalog file loading error or pending:', err);
-      });
-  }, []);
-
-  const saveItemsToStorage = (updatedItems: CatalogItem[]) => {
-    setItems(updatedItems);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedItems));
-  };
-
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3500);
   };
+
+  // Fetch all products directly from Supabase (Zero LocalStorage)
+  const fetchProductsFromSupabase = async () => {
+    if (!isSupabaseConfigured) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        showToast(`Failed to load from Supabase: ${error.message}`);
+        setIsLoading(false);
+        return;
+      }
+
+      const parsedItems: CatalogItem[] = (data || []).map((row) => {
+        let images: string[] = [];
+        let main_image = '';
+        let makerworld_url = '';
+        let slug = '';
+
+        if (row.image_url) {
+          try {
+            if (row.image_url.trim().startsWith('{')) {
+              const meta = JSON.parse(row.image_url);
+              images = meta.images || [];
+              main_image = meta.main_image || (images[0] || '');
+              makerworld_url = meta.makerworld_url || '';
+              slug = meta.slug || '';
+            } else {
+              main_image = row.image_url;
+              images = [row.image_url];
+            }
+          } catch (e) {
+            main_image = row.image_url;
+            images = [row.image_url];
+          }
+        }
+
+        return {
+          id: row.id,
+          slug: slug || row.id,
+          name: row.name,
+          price: row.selling_price ?? '',
+          print_time: row.print_time || '2h',
+          filament_weight: row.filament_weight || 40,
+          makerworld_url:
+            makerworld_url ||
+            `https://makerworld.com/en/search/models?keyword=${encodeURIComponent(row.name)}`,
+          images: images.length > 0 ? images : [main_image || '/placeholder.png'],
+          main_image: main_image || (images[0] || '/placeholder.png'),
+          category: '3D Model',
+          created_at: row.created_at || new Date().toISOString(),
+        };
+      });
+
+      setItems(parsedItems);
+      setSelectedIds((prev) => {
+        // Retain or select all if new
+        if (prev.size === 0) {
+          return new Set(parsedItems.map((i) => i.id));
+        }
+        const updatedSet = new Set<string>();
+        parsedItems.forEach((i) => {
+          if (prev.has(i.id)) updatedSet.add(i.id);
+        });
+        return updatedSet.size > 0 ? updatedSet : new Set(parsedItems.map((i) => i.id));
+      });
+    } catch (err: any) {
+      console.error('Fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Realtime Supabase Subscription & Initial Load
+  useEffect(() => {
+    fetchProductsFromSupabase();
+
+    if (isSupabaseConfigured) {
+      const channel = supabase
+        .channel('products_realtime_catalog')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'products' },
+          (payload) => {
+            console.log('Realtime change received from Supabase:', payload);
+            fetchProductsFromSupabase();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, []);
 
   const handleToggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -146,140 +185,116 @@ export const Catalog: React.FC = () => {
     showToast('Deselected all items');
   };
 
-  const handleDeleteProduct = (id: string, name: string) => {
+  // Permanent Product Deletion (Directly in Supabase)
+  const handleDeleteProduct = async (id: string, name: string) => {
     if (window.confirm(`Are you sure you want to permanently delete "${name}" from your catalog?`)) {
-      // 1. Save deleted ID to DELETED_IDS_KEY set so it NEVER reappears on page load or scrape
-      const deletedSet = getDeletedIds();
-      deletedSet.add(id);
-      localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(deletedSet)));
-
-      // 2. Filter out from local state & storage
-      const updated = items.filter((item) => item.id !== id);
-      saveItemsToStorage(updated);
-      
+      // Optimistic UI update
+      setItems((prev) => prev.filter((item) => item.id !== id));
       setSelectedIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
 
-      // 3. Delete from Supabase if configured
       if (isSupabaseConfigured) {
-        supabase
-          .from('products')
-          .delete()
-          .eq('name', name)
-          .then(({ error }) => {
-            if (error) console.warn('Supabase delete error:', error.message);
-          });
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) {
+          console.error('Supabase delete error:', error);
+          showToast(`Delete failed on Supabase: ${error.message}`);
+          fetchProductsFromSupabase();
+          return;
+        }
       }
 
-      showToast(`Permanently deleted "${name}"`);
+      showToast(`Permanently deleted "${name}" from Supabase`);
     }
   };
 
-  const handlePriceInputChange = (id: string, val: string) => {
-    const targetItem = items.find((i) => i.id === id);
-    const updated = items.map((item) => {
-      if (item.id !== id) return item;
-      if (val.trim() === '') return { ...item, price: '' };
-      
-      const num = parseFloat(val);
-      return { ...item, price: isNaN(num) ? '' : val };
-    });
-    saveItemsToStorage(updated);
+  // Price Input Change (Directly saved to Supabase in real-time)
+  const handlePriceInputChange = async (id: string, val: string) => {
+    const updatedPrice = val.trim() === '' ? '' : val;
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, price: updatedPrice } : item))
+    );
 
-    // Sync price directly to Supabase if configured
-    if (isSupabaseConfigured && targetItem) {
+    if (isSupabaseConfigured) {
       const priceNum = val.trim() === '' ? 0 : parseFloat(val) || 0;
-      supabase
+      const { error } = await supabase
         .from('products')
         .update({ selling_price: priceNum })
-        .eq('name', targetItem.name)
-        .then(({ error }) => {
-          if (error) console.warn('Supabase price update error:', error.message);
-        });
+        .eq('id', id);
+
+      if (error) {
+        console.error('Supabase price update error:', error);
+      }
     }
   };
 
-  const handleApplyBulkPrice = () => {
+  // Batch Set Price (Directly updated in Supabase)
+  const handleApplyBulkPrice = async () => {
     const newPrice = parseFloat(bulkPriceInput);
     if (isNaN(newPrice) || newPrice < 0) {
       showToast('Please enter a valid bulk price');
       return;
     }
 
-    const updated = items.map((item) => ({ ...item, price: newPrice }));
-    saveItemsToStorage(updated);
+    setItems((prev) => prev.map((item) => ({ ...item, price: newPrice })));
     setIsBulkModalOpen(false);
-    showToast(`Updated all ${items.length} items to ₹${newPrice}!`);
 
-    // Sync bulk price to Supabase if configured
     if (isSupabaseConfigured) {
-      const dbPayload = updated.map((item) => ({
-        name: item.name,
-        selling_price: newPrice,
-      }));
-      supabase
+      showToast(`Updating prices in Supabase...`);
+      const { error } = await supabase
         .from('products')
-        .upsert(dbPayload, { onConflict: 'name' })
-        .then(({ error }) => {
-          if (error) console.warn('Supabase bulk price update error:', error.message);
-        });
+        .update({ selling_price: newPrice })
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+
+      if (error) {
+        console.error('Supabase bulk price error:', error);
+        showToast(`Failed bulk price update: ${error.message}`);
+      } else {
+        showToast(`Updated all catalog items to ₹${newPrice} in Supabase!`);
+      }
     }
   };
 
-  const handleDeleteImage = (itemId: string, imgIdxToDelete: number) => {
-    const updated = items.map((item) => {
-      if (item.id !== itemId) return item;
-      const newImages = item.images.filter((_, idx) => idx !== imgIdxToDelete);
-      return {
-        ...item,
+  // Delete Image from Gallery (Directly saved to Supabase)
+  const handleDeleteImage = async (itemId: string, imgIdxToDelete: number) => {
+    const targetItem = items.find((i) => i.id === itemId);
+    if (!targetItem) return;
+
+    const newImages = targetItem.images.filter((_, idx) => idx !== imgIdxToDelete);
+    const newMain = newImages[0] || '';
+
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        return {
+          ...item,
+          images: newImages,
+          main_image: newMain,
+        };
+      })
+    );
+    setActiveImageIndexMap((prev) => ({ ...prev, [itemId]: 0 }));
+
+    if (isSupabaseConfigured) {
+      const updatedMeta = JSON.stringify({
+        main_image: newMain,
         images: newImages,
-        main_image: newImages[0] || '',
-      };
-    });
-    saveItemsToStorage(updated);
-    setActiveImageIndexMap((prev) => ({
-      ...prev,
-      [itemId]: 0,
-    }));
-    showToast('Image deleted from catalog');
-  };
+        makerworld_url: targetItem.makerworld_url,
+        slug: targetItem.slug,
+      });
 
-  const handleSyncToSupabase = async () => {
-    if (!isSupabaseConfigured) {
-      showToast('Supabase is not configured. Check VITE_SUPABASE_ANON_KEY in .env');
-      return;
-    }
+      const { error } = await supabase
+        .from('products')
+        .update({ image_url: updatedMeta })
+        .eq('id', itemId);
 
-    setIsSyncing(true);
-    showToast('Syncing catalog products to Supabase...');
-
-    try {
-      const dbPayload = items.map((item) => ({
-        name: item.name,
-        print_time: item.print_time || '2h',
-        filament_weight: item.filament_weight || 40,
-        cost_per_kg: 1000,
-        selling_price:
-          typeof item.price === 'number'
-            ? item.price
-            : parseFloat(item.price as string) || 0,
-        packaging_cost: 0,
-        delivery_cost: 0,
-        image_url: item.main_image || (item.images && item.images[0]) || null,
-      }));
-
-      const { error } = await supabase.from('products').upsert(dbPayload, { onConflict: 'name' });
-      if (error) throw error;
-
-      showToast(`Successfully synced ${items.length} products to Supabase!`);
-    } catch (err: any) {
-      console.error('Supabase sync error:', err);
-      showToast(`Sync failed: ${err.message || 'Unknown error'}`);
-    } finally {
-      setIsSyncing(false);
+      if (error) {
+        console.error('Supabase image update error:', error);
+      } else {
+        showToast('Image deleted and saved in Supabase');
+      }
     }
   };
 
@@ -300,7 +315,7 @@ export const Catalog: React.FC = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedItems, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "makerworld_kids_puzzles_catalog.json");
+    downloadAnchor.setAttribute("download", "makerworld_catalog_items.json");
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -340,7 +355,7 @@ export const Catalog: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">DEXTER3D ERP - PRODUCT CATALOG</h1>
-            <p className="text-sm font-semibold text-slate-600">3D Printed Kids Puzzle & Toy Collection</p>
+            <p className="text-sm font-semibold text-slate-600">3D Printed Product & Toy Collection</p>
           </div>
           <div className="text-right text-xs text-slate-500 font-mono">
             <div>Date: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
@@ -354,31 +369,22 @@ export const Catalog: React.FC = () => {
         <header className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-neutral-900 pb-6 mb-6 gap-4 print:hidden">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                MakerWorld Scraped Collection
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                <Radio className="h-3 w-3 animate-pulse" />
+                Supabase Realtime Data
               </span>
-              <span className="text-xs text-neutral-500">• {items.length} Models Loaded</span>
+              <span className="text-xs text-neutral-500">• {items.length} Models Active</span>
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-neutral-50 bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent mt-1">
               All 3D Catalog
             </h1>
             <p className="text-sm text-neutral-400 mt-1">
-              Select products for your PDF catalog, set custom prices, clean photo galleries, or permanently delete unwanted products.
+              Live Supabase database. Real-time prices, photo controls, item selection, and PDF export.
             </p>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center flex-wrap gap-2.5">
-            <button
-              onClick={handleSyncToSupabase}
-              disabled={isSyncing}
-              className="flex items-center gap-2 rounded-xl bg-purple-950/40 border border-purple-800/50 px-3.5 py-2.5 text-xs font-semibold text-purple-300 hover:bg-purple-900 hover:text-white transition-all shadow-sm disabled:opacity-50"
-              title="Sync catalog products to Supabase database"
-            >
-              <Database className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Syncing...' : 'Sync to Supabase'}
-            </button>
-
             <button
               onClick={() => setIsBulkModalOpen(true)}
               className="flex items-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-3.5 py-2.5 text-xs font-semibold text-neutral-300 hover:text-white hover:bg-neutral-800 transition-all shadow-sm"
@@ -419,8 +425,8 @@ export const Catalog: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 print:hidden">
           <div className="rounded-2xl border border-neutral-900 bg-neutral-900/40 p-4 backdrop-blur-md">
             <div className="flex items-center justify-between text-neutral-400 text-xs font-medium">
-              <span>Total Catalog Items</span>
-              <Layers className="h-4 w-4 text-purple-400" />
+              <span>Supabase Database Items</span>
+              <Database className="h-4 w-4 text-purple-400" />
             </div>
             <div className="text-2xl font-bold text-neutral-100 mt-2">
               {items.length} <span className="text-xs text-neutral-500 font-normal">items</span>
@@ -455,7 +461,7 @@ export const Catalog: React.FC = () => {
             <Search className="h-4 w-4 text-neutral-500 shrink-0" />
             <input
               type="text"
-              placeholder="Search puzzle models..."
+              placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-transparent border-0 focus:outline-none text-sm text-neutral-200 placeholder-neutral-500"
@@ -495,10 +501,15 @@ export const Catalog: React.FC = () => {
         </div>
 
         {/* ================= CATALOG GRID ================= */}
-        {filteredItems.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-dashed border-neutral-900 text-neutral-500 print:hidden">
+            <Database className="h-10 w-10 text-purple-400 animate-pulse mb-2" />
+            <p className="text-sm font-semibold text-neutral-300">Loading catalog from Supabase realtime database...</p>
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-dashed border-neutral-900 text-neutral-500 print:hidden">
             <PackageCheck className="h-10 w-10 text-neutral-600 mb-2" />
-            <p className="text-sm">No puzzle items found matching "{searchQuery}".</p>
+            <p className="text-sm">No items found matching "{searchQuery}".</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 print:grid-cols-2 print:gap-6">
@@ -542,7 +553,7 @@ export const Catalog: React.FC = () => {
                         handleDeleteProduct(item.id, item.name);
                       }}
                       className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-950/40 text-red-400 border border-red-900/50 text-[10px] font-semibold hover:bg-red-900 hover:text-white transition-colors"
-                      title="Permanently delete product from catalog"
+                      title="Permanently delete product from Supabase database"
                     >
                       <Trash2 className="h-3 w-3" />
                       <span>Delete Product</span>
@@ -607,16 +618,18 @@ export const Catalog: React.FC = () => {
                     )}
 
                     {/* MakerWorld Original Link Badge (Hidden in Print) */}
-                    <a
-                      href={item.makerworld_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-neutral-950/80 px-2.5 py-1 text-[10px] font-semibold text-purple-300 border border-purple-500/30 backdrop-blur-md hover:bg-purple-900/50 transition-colors print:hidden"
-                      title="View on MakerWorld"
-                    >
-                      <span>MakerWorld</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
+                    {item.makerworld_url && (
+                      <a
+                        href={item.makerworld_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-neutral-950/80 px-2.5 py-1 text-[10px] font-semibold text-purple-300 border border-purple-500/30 backdrop-blur-md hover:bg-purple-900/50 transition-colors print:hidden"
+                        title="View product details"
+                      >
+                        <span>MakerWorld</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
                   </div>
 
                   {/* Thumbnail Strip with Individual Delete Controls (Screen Mode) */}
@@ -677,7 +690,7 @@ export const Catalog: React.FC = () => {
                       <div className="flex flex-col w-full">
                         <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-neutral-500 print:text-slate-600 font-semibold mb-1">
                           <span>Selling Price</span>
-                          <span className="print:hidden text-[9px] text-neutral-500 font-normal">Editable</span>
+                          <span className="print:hidden text-[9px] text-emerald-400 font-semibold">Saved in Supabase</span>
                         </div>
 
                         {/* Direct Editable Price Input */}
@@ -731,7 +744,7 @@ export const Catalog: React.FC = () => {
             </div>
 
             <p className="text-xs text-neutral-400">
-              Enter a default price to apply across all <span className="text-purple-300 font-bold">{items.length}</span> catalog items. You can still customize individual prices afterwards.
+              Enter a default price to apply across all <span className="text-purple-300 font-bold">{items.length}</span> catalog items in Supabase. You can still customize individual prices afterwards.
             </p>
 
             <div className="space-y-1.5">
