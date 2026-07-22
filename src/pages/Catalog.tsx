@@ -15,8 +15,10 @@ import {
   DollarSign,
   Trash2,
   CheckSquare,
-  Square
+  Square,
+  Database
 } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export interface CatalogItem {
   id: string;
@@ -25,7 +27,7 @@ export interface CatalogItem {
   author?: string;
   description?: string;
   makerworld_url: string;
-  price: number;
+  price: number | string;
   cost_price?: number;
   print_time?: string;
   filament_weight?: number;
@@ -36,6 +38,16 @@ export interface CatalogItem {
 }
 
 const STORAGE_KEY = 'dexter3d_catalog_kids_puzzles';
+const DELETED_IDS_KEY = 'dexter3d_deleted_catalog_ids';
+
+const getDeletedIds = (): Set<string> => {
+  try {
+    const saved = localStorage.getItem(DELETED_IDS_KEY);
+    return new Set(saved ? JSON.parse(saved) : []);
+  } catch (e) {
+    return new Set();
+  }
+};
 
 export const Catalog: React.FC = () => {
   const [items, setItems] = useState<CatalogItem[]>([]);
@@ -54,22 +66,37 @@ export const Catalog: React.FC = () => {
   // Toast alert message
   const [toast, setToast] = useState<string | null>(null);
 
+  // Syncing state
+  const [isSyncing, setIsSyncing] = useState(false);
+
   useEffect(() => {
     import('../data/catalog_puzzles.json')
       .then((module) => {
         if (Array.isArray(module.default) && module.default.length > 0) {
-          const jsonItems = module.default as CatalogItem[];
+          const deletedIds = getDeletedIds();
+          const jsonItems = (module.default as CatalogItem[]).filter(
+            (i) => !deletedIds.has(i.id)
+          );
+
           const saved = localStorage.getItem(STORAGE_KEY);
           if (saved) {
             try {
               const parsed = JSON.parse(saved);
-              if (Array.isArray(parsed) && parsed.length > 0) {
+              if (Array.isArray(parsed)) {
+                // Filter out deleted items from saved localStorage state
+                const validSaved = parsed.filter((i: CatalogItem) => !deletedIds.has(i.id));
                 const itemMap = new Map<string, CatalogItem>();
-                // First populate with JSON database
-                jsonItems.forEach(i => itemMap.set(i.id, i));
-                // Then overlay custom user pricing/deletions from localStorage
-                parsed.forEach((i: CatalogItem) => itemMap.set(i.id, i));
-                const merged = Array.from(itemMap.values());
+                
+                // First populate with default JSON database
+                jsonItems.forEach((i) => itemMap.set(i.id, i));
+                
+                // Then overlay custom user pricing/edits from localStorage
+                validSaved.forEach((i: CatalogItem) => itemMap.set(i.id, i));
+                
+                const merged = Array.from(itemMap.values()).filter(
+                  (i) => !deletedIds.has(i.id)
+                );
+                
                 setItems(merged);
                 setSelectedIds(new Set(merged.map((i) => i.id)));
                 return;
@@ -121,22 +148,45 @@ export const Catalog: React.FC = () => {
 
   const handleDeleteProduct = (id: string, name: string) => {
     if (window.confirm(`Are you sure you want to permanently delete "${name}" from your catalog?`)) {
+      // 1. Save deleted ID to DELETED_IDS_KEY set so it NEVER reappears on page load or scrape
+      const deletedSet = getDeletedIds();
+      deletedSet.add(id);
+      localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(deletedSet)));
+
+      // 2. Filter out from local state & storage
       const updated = items.filter((item) => item.id !== id);
       saveItemsToStorage(updated);
+      
       setSelectedIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
+
+      // 3. Delete from Supabase if configured
+      if (isSupabaseConfigured) {
+        supabase
+          .from('products')
+          .delete()
+          .eq('name', name)
+          .then(({ error }) => {
+            if (error) console.warn('Supabase delete error:', error.message);
+          });
+      }
+
       showToast(`Permanently deleted "${name}"`);
     }
   };
 
   const handlePriceInputChange = (id: string, val: string) => {
-    const num = parseFloat(val);
-    const updated = items.map((item) =>
-      item.id === id ? { ...item, price: isNaN(num) ? 0 : num } : item
-    );
+    const updated = items.map((item) => {
+      if (item.id !== id) return item;
+      // Allow empty string so the whole price field can be cleared!
+      if (val.trim() === '') return { ...item, price: '' };
+      
+      const num = parseFloat(val);
+      return { ...item, price: isNaN(num) ? '' : val };
+    });
     saveItemsToStorage(updated);
   };
 
@@ -169,6 +219,42 @@ export const Catalog: React.FC = () => {
       [itemId]: 0,
     }));
     showToast('Image deleted from catalog');
+  };
+
+  const handleSyncToSupabase = async () => {
+    if (!isSupabaseConfigured) {
+      showToast('Supabase is not configured. Check VITE_SUPABASE_ANON_KEY in .env');
+      return;
+    }
+
+    setIsSyncing(true);
+    showToast('Syncing catalog products to Supabase...');
+
+    try {
+      const dbPayload = items.map((item) => ({
+        name: item.name,
+        print_time: item.print_time || '2h',
+        filament_weight: item.filament_weight || 40,
+        cost_per_kg: 1000,
+        selling_price:
+          typeof item.price === 'number'
+            ? item.price
+            : parseFloat(item.price as string) || 0,
+        packaging_cost: 0,
+        delivery_cost: 0,
+        image_url: item.main_image || (item.images && item.images[0]) || null,
+      }));
+
+      const { error } = await supabase.from('products').upsert(dbPayload, { onConflict: 'name' });
+      if (error) throw error;
+
+      showToast(`Successfully synced ${items.length} products to Supabase!`);
+    } catch (err: any) {
+      console.error('Supabase sync error:', err);
+      showToast(`Sync failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleDownloadPDF = () => {
@@ -214,7 +300,10 @@ export const Catalog: React.FC = () => {
     return item.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const totalValue = items.reduce((acc, curr) => acc + (curr.price || 0), 0);
+  const totalValue = items.reduce((acc, curr) => {
+    const p = typeof curr.price === 'number' ? curr.price : parseFloat(curr.price as string);
+    return acc + (isNaN(p) ? 0 : p);
+  }, 0);
   const avgPrice = items.length > 0 ? (totalValue / items.length).toFixed(0) : '0';
 
   return (
@@ -254,6 +343,16 @@ export const Catalog: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center flex-wrap gap-2.5">
+            <button
+              onClick={handleSyncToSupabase}
+              disabled={isSyncing}
+              className="flex items-center gap-2 rounded-xl bg-purple-950/40 border border-purple-800/50 px-3.5 py-2.5 text-xs font-semibold text-purple-300 hover:bg-purple-900 hover:text-white transition-all shadow-sm disabled:opacity-50"
+              title="Sync catalog products to Supabase database"
+            >
+              <Database className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Syncing...' : 'Sync to Supabase'}
+            </button>
+
             <button
               onClick={() => setIsBulkModalOpen(true)}
               className="flex items-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-3.5 py-2.5 text-xs font-semibold text-neutral-300 hover:text-white hover:bg-neutral-800 transition-all shadow-sm"
@@ -560,12 +659,23 @@ export const Catalog: React.FC = () => {
                           <span className="text-base font-extrabold text-purple-400 print:text-slate-900">₹</span>
                           
                           <input
-                            type="number"
-                            value={item.price}
+                            type="text"
+                            inputMode="decimal"
+                            value={item.price ?? ''}
                             onChange={(e) => handlePriceInputChange(item.id, e.target.value)}
                             className="w-24 rounded-lg bg-neutral-950 border border-neutral-800 px-2 py-1 text-sm font-bold text-emerald-400 print:bg-transparent print:border-none print:text-slate-900 print:p-0 print:text-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
-                            placeholder="Price"
+                            placeholder="0"
                           />
+
+                          {item.price !== '' && item.price !== undefined && (
+                            <button
+                              onClick={() => handlePriceInputChange(item.id, '')}
+                              className="text-neutral-500 hover:text-red-400 p-1 transition-colors print:hidden"
+                              title="Clear price"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -595,7 +705,7 @@ export const Catalog: React.FC = () => {
             </div>
 
             <p className="text-xs text-neutral-400">
-              Enter a default price to apply across all <span className="text-purple-300 font-bold">{items.length}</span> Kids Puzzle catalog items. You can still customize individual prices afterwards.
+              Enter a default price to apply across all <span className="text-purple-300 font-bold">{items.length}</span> catalog items. You can still customize individual prices afterwards.
             </p>
 
             <div className="space-y-1.5">
