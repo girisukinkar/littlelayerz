@@ -31,6 +31,7 @@ import {
   Box
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { generateFastCatalogPDF } from '../utils/pdfExporter';
 
 export interface CatalogItem {
   id: string;
@@ -662,16 +663,22 @@ export const Catalog: React.FC = () => {
     showToast('Reordered product catalog grid!');
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (selectedIds.size === 0) {
       showToast('Please select at least 1 product to generate PDF catalog!');
       return;
     }
 
-    showToast(`Opening PDF Print Preview for ${selectedIds.size} selected items... Select "Save as PDF"`);
-    setTimeout(() => {
+    const selectedItems = items.filter((i) => selectedIds.has(i.id));
+    showToast(`Generating instant PDF catalog for ${selectedItems.length} selected product(s)...`);
+
+    try {
+      await generateFastCatalogPDF(selectedItems, (msg) => showToast(msg));
+    } catch (e: any) {
+      console.error('Fast PDF Export Error:', e);
+      showToast('Fast PDF error, opening browser print...');
       window.print();
-    }, 500);
+    }
   };
 
   const handleExportJSON = () => {
