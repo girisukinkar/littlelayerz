@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { generateFastCatalogPDF } from '../utils/pdfExporter';
+import { importMakerWorldProduct } from '../services/makerworldScraper';
 
 export interface CatalogItem {
   id: string;
@@ -81,6 +82,13 @@ export const Catalog: React.FC = () => {
   const [newDimUnit, setNewDimUnit] = useState<'mm' | 'cm'>('mm');
   const [newProductFiles, setNewProductFiles] = useState<FileList | null>(null);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
+
+  // Import MakerWorld Link Modal state
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [importPhotoUrl, setImportPhotoUrl] = useState('');
+  const [importPrice, setImportPrice] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   // Drag and Drop Rearrange state
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -558,6 +566,34 @@ export const Catalog: React.FC = () => {
     }
   };
 
+  // Import MakerWorld Model Link Handler
+  const handleImportMakerWorldSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importUrl.trim()) {
+      showToast('MakerWorld URL is required');
+      return;
+    }
+
+    setIsImporting(true);
+    showToast('Importing product from MakerWorld...');
+
+    try {
+      const customPriceNum = parseFloat(importPrice) || 0;
+      await importMakerWorldProduct(importUrl.trim(), importPhotoUrl.trim(), customPriceNum);
+      showToast('Successfully imported MakerWorld model to catalog!');
+      setImportUrl('');
+      setImportPhotoUrl('');
+      setImportPrice('');
+      setIsImportModalOpen(false);
+      fetchProductsFromSupabase();
+    } catch (err: any) {
+      console.error('Import error:', err);
+      showToast(`Import failed: ${err.message || err}`);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   // Rearrange / Move Images inside a catalog item
   const handleMoveImage = async (itemId: string, fromIndex: number, direction: 'left' | 'right' | 'main') => {
     const targetItem = items.find((i) => i.id === itemId);
@@ -761,6 +797,15 @@ export const Catalog: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center flex-wrap gap-2.5">
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 border border-emerald-500/30 px-3.5 py-2.5 text-xs font-bold text-white hover:from-emerald-500 hover:to-teal-500 transition-all shadow-md shadow-emerald-500/20"
+              title="Paste MakerWorld URL to auto-scrape and add to catalog"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Import MakerWorld Link
+            </button>
+
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="flex items-center gap-2 rounded-xl bg-purple-600 border border-purple-500/30 px-3.5 py-2.5 text-xs font-semibold text-white hover:bg-purple-500 transition-all shadow-md shadow-purple-500/20"
@@ -1488,6 +1533,103 @@ export const Catalog: React.FC = () => {
                     <>
                       <Plus className="h-4 w-4" />
                       <span>Save Product</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= IMPORT MAKERWORLD LINK MODAL ================= */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 print:hidden">
+          <div className="w-full max-w-lg rounded-2xl border border-neutral-800 bg-neutral-900 p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-emerald-950 border border-emerald-500/30 text-emerald-400">
+                  <ExternalLink className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-neutral-100">Import from MakerWorld</h3>
+                  <p className="text-xs text-neutral-400">Paste MakerWorld model URL to scrape and auto-add</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsImportModalOpen(false)}
+                className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleImportMakerWorldSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                  MakerWorld Model URL *
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-3.5 py-2.5 text-sm text-neutral-100 font-mono focus:outline-none focus:border-emerald-500"
+                  placeholder="https://makerworld.com/en/models/2547928-pikachu-glasses-holder"
+                />
+                <p className="text-[10px] text-neutral-500 mt-1">
+                  Accepts any MakerWorld 3D model link.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                  Cover Photo URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  value={importPhotoUrl}
+                  onChange={(e) => setImportPhotoUrl(e.target.value)}
+                  className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-3.5 py-2 text-sm text-neutral-100 font-mono focus:outline-none focus:border-emerald-500"
+                  placeholder="https://... (Direct image URL if available)"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                  Selling Price (₹ - Optional)
+                </label>
+                <input
+                  type="number"
+                  value={importPrice}
+                  onChange={(e) => setImportPrice(e.target.value)}
+                  className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-3.5 py-2 text-sm text-neutral-100 font-bold focus:outline-none focus:border-emerald-500"
+                  placeholder="e.g. 299"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-neutral-400 hover:text-white hover:bg-neutral-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isImporting}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-xs font-bold text-white shadow-lg hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50"
+                >
+                  {isImporting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Scraping & Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink className="h-4 w-4" />
+                      <span>Scrape & Add to Catalog</span>
                     </>
                   )}
                 </button>
