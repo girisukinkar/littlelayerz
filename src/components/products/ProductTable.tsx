@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import type { Product } from '../../types/product';
 import { calculateProductMetrics } from '../../utils/productCalculations';
 import { Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
@@ -6,14 +7,13 @@ import { useSettingsStore } from '../../store/useSettingsStore';
 
 interface ProductTableProps {
   products: Product[];
-  onEdit: (product: Product) => void;
+  onEdit?: (product: Product) => void;
   onDelete: (id: string) => void;
   deletingId: string | null;
 }
 
 export const ProductTable: React.FC<ProductTableProps> = ({
   products,
-  onEdit,
   onDelete,
   deletingId,
 }) => {
@@ -137,14 +137,13 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 {/* Actions */}
                 <td className="px-4 py-3.5 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => onEdit(rawProduct)}
-                      disabled={isDeleting}
+                    <Link
+                      to={`/products/edit/${product.id}`}
                       className="rounded p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-purple-400 disabled:opacity-50 transition-colors"
-                      title="Edit Product"
+                      title="Edit Product Page"
                     >
                       <Edit2 className="h-4 w-4" />
-                    </button>
+                    </Link>
                     <button
                       onClick={() => product.id && onDelete(product.id)}
                       disabled={isDeleting}

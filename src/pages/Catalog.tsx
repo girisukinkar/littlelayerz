@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Search,
   X,
@@ -16,7 +17,18 @@ import {
   CheckSquare,
   Square,
   Database,
-  Radio
+  Radio,
+  Upload,
+  Plus,
+  Loader2,
+  ArrowLeft,
+  ArrowRight,
+  Star,
+  GripVertical,
+  Edit,
+  Scale,
+  Clock,
+  Box
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -31,6 +43,7 @@ export interface CatalogItem {
   cost_price?: number;
   print_time?: string;
   filament_weight?: number;
+  dimensions?: string;
   images: string[];
   main_image: string;
   category: string;
@@ -52,6 +65,25 @@ export const Catalog: React.FC = () => {
   // Image slider active index map
   const [activeImageIndexMap, setActiveImageIndexMap] = useState<Record<string, number>>({});
   
+  // Image Uploading State per item ID
+  const [uploadingItemIdMap, setUploadingItemIdMap] = useState<Record<string, boolean>>({});
+
+  // Add Product Modal state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState('');
+  const [newProductPrintTime, setNewProductPrintTime] = useState('');
+  const [newProductWeight, setNewProductWeight] = useState('');
+  const [newDimL, setNewDimL] = useState('');
+  const [newDimB, setNewDimB] = useState('');
+  const [newDimH, setNewDimH] = useState('');
+  const [newDimUnit, setNewDimUnit] = useState<'mm' | 'cm'>('mm');
+  const [newProductFiles, setNewProductFiles] = useState<FileList | null>(null);
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
+
+  // Drag and Drop Rearrange state
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+
   // Toast alert message
   const [toast, setToast] = useState<string | null>(null);
 
@@ -85,6 +117,7 @@ export const Catalog: React.FC = () => {
         let main_image = '';
         let makerworld_url = '';
         let slug = '';
+        let dimensions = '';
 
         if (row.image_url) {
           try {
@@ -94,6 +127,7 @@ export const Catalog: React.FC = () => {
               main_image = meta.main_image || (images[0] || '');
               makerworld_url = meta.makerworld_url || '';
               slug = meta.slug || '';
+              dimensions = meta.dimensions || '';
             } else {
               main_image = row.image_url;
               images = [row.image_url];
@@ -111,6 +145,7 @@ export const Catalog: React.FC = () => {
           price: row.selling_price ?? '',
           print_time: row.print_time || '2h',
           filament_weight: row.filament_weight || 40,
+          dimensions: dimensions || '',
           makerworld_url:
             makerworld_url ||
             `https://makerworld.com/en/search/models?keyword=${encodeURIComponent(row.name)}`,
@@ -342,6 +377,291 @@ export const Catalog: React.FC = () => {
     }
   };
 
+  // Helper to convert file to data URL as fallback
+  const readFileAsDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Upload single file to Supabase Storage with Data URL fallback
+  const uploadFileToSupabaseStorage = async (file: File, prefix: string): Promise<string> => {
+    if (isSupabaseConfigured) {
+      try {
+        const fileExt = file.name.split('.').pop() || 'jpg';
+        const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, file, { upsert: true });
+
+        if (!uploadErr) {
+          const { data: pubData } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(fileName);
+          if (pubData?.publicUrl) {
+            return pubData.publicUrl;
+          }
+        } else {
+          console.warn('Supabase storage upload failed, using data URL fallback:', uploadErr);
+        }
+      } catch (e) {
+        console.warn('Supabase storage upload exception, using fallback:', e);
+      }
+    }
+    return await readFileAsDataURL(file);
+  };
+
+  // Handle Image Upload for existing catalog item
+  const handleUploadImagesToItem = async (itemId: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const targetItem = items.find((i) => i.id === itemId);
+    if (!targetItem) return;
+
+    setUploadingItemIdMap((prev) => ({ ...prev, [itemId]: true }));
+    showToast(`Uploading ${files.length} photo(s)...`);
+
+    try {
+      const newUploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const url = await uploadFileToSupabaseStorage(file, `catalog/${itemId}`);
+        newUploadedUrls.push(url);
+      }
+
+      const existingImages = (targetItem.images || []).filter((img) => img !== '/placeholder.png');
+      const updatedImages = [...existingImages, ...newUploadedUrls];
+      const updatedMain = targetItem.main_image && targetItem.main_image !== '/placeholder.png'
+        ? targetItem.main_image
+        : updatedImages[0];
+
+      // Optimistic state update
+      setItems((prev) =>
+        prev.map((item) => {
+          if (item.id !== itemId) return item;
+          return {
+            ...item,
+            images: updatedImages,
+            main_image: updatedMain,
+          };
+        })
+      );
+
+      // Set active thumbnail to newly uploaded image
+      setActiveImageIndexMap((prev) => ({ ...prev, [itemId]: updatedImages.length - 1 }));
+
+      // Save updated catalog item metadata to Supabase database
+      if (isSupabaseConfigured) {
+        const updatedMeta = JSON.stringify({
+          main_image: updatedMain,
+          images: updatedImages,
+          makerworld_url: targetItem.makerworld_url,
+          slug: targetItem.slug,
+        });
+
+        const { error } = await supabase
+          .from('products')
+          .update({ image_url: updatedMeta })
+          .eq('id', itemId);
+
+        if (error) {
+          console.error('Supabase image update error:', error);
+          showToast(`Image uploaded locally, but Supabase table update failed: ${error.message}`);
+        } else {
+          showToast(`Uploaded ${newUploadedUrls.length} photo(s) and saved in Supabase!`);
+        }
+      } else {
+        showToast(`Uploaded ${newUploadedUrls.length} photo(s)`);
+      }
+    } catch (err: any) {
+      console.error('Upload failed:', err);
+      showToast(`Upload failed: ${err.message || err}`);
+    } finally {
+      setUploadingItemIdMap((prev) => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  // Add new product with image upload directly to Supabase
+  const handleAddProductSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProductName.trim()) {
+      showToast('Product name is required');
+      return;
+    }
+
+    setIsAddingProduct(true);
+    try {
+      const uploadedUrls: string[] = [];
+      if (newProductFiles && newProductFiles.length > 0) {
+        showToast(`Uploading ${newProductFiles.length} photo(s) to Supabase...`);
+        for (let i = 0; i < newProductFiles.length; i++) {
+          const file = newProductFiles[i];
+          const url = await uploadFileToSupabaseStorage(file, 'new_product');
+          uploadedUrls.push(url);
+        }
+      }
+
+      const mainImg = uploadedUrls[0] || '/placeholder.png';
+      const imagesList = uploadedUrls.length > 0 ? uploadedUrls : ['/placeholder.png'];
+      const priceNum = parseFloat(newProductPrice) || 0;
+      const weightNum = parseFloat(newProductWeight) || 40;
+      const printTimeStr = newProductPrintTime.trim() || '2h';
+      const slugStr = newProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+      let dimensionsStr = '';
+      if (newDimL.trim() || newDimB.trim() || newDimH.trim()) {
+        dimensionsStr = `${newDimL.trim() || '0'} × ${newDimB.trim() || '0'} × ${newDimH.trim() || '0'} ${newDimUnit}`;
+      }
+
+      const imageUrlJSON = JSON.stringify({
+        main_image: mainImg,
+        images: imagesList,
+        makerworld_url: `https://makerworld.com/en/search/models?keyword=${encodeURIComponent(newProductName)}`,
+        slug: slugStr,
+        dimensions: dimensionsStr,
+      });
+
+      if (isSupabaseConfigured) {
+        const { error } = await supabase
+          .from('products')
+          .insert({
+            name: newProductName.trim(),
+            selling_price: priceNum,
+            filament_weight: weightNum,
+            print_time: printTimeStr,
+            cost_per_kg: 1500,
+            image_url: imageUrlJSON,
+          });
+
+        if (error) throw error;
+
+        showToast(`Added "${newProductName}" with image to Supabase catalog!`);
+        fetchProductsFromSupabase();
+      } else {
+        showToast('Supabase is not configured');
+      }
+
+      setIsAddModalOpen(false);
+      setNewProductName('');
+      setNewProductPrice('');
+      setNewProductPrintTime('');
+      setNewProductWeight('');
+      setNewProductFiles(null);
+    } catch (err: any) {
+      console.error('Failed to add product:', err);
+      showToast(`Error creating product: ${err.message || err}`);
+    } finally {
+      setIsAddingProduct(false);
+    }
+  };
+
+  // Rearrange / Move Images inside a catalog item
+  const handleMoveImage = async (itemId: string, fromIndex: number, direction: 'left' | 'right' | 'main') => {
+    const targetItem = items.find((i) => i.id === itemId);
+    if (!targetItem || !targetItem.images || targetItem.images.length < 2) return;
+
+    const newImages = [...targetItem.images];
+    let newActiveIdx = fromIndex;
+
+    if (direction === 'main') {
+      if (fromIndex === 0) return;
+      const [moved] = newImages.splice(fromIndex, 1);
+      newImages.unshift(moved);
+      newActiveIdx = 0;
+    } else if (direction === 'left' && fromIndex > 0) {
+      const toIndex = fromIndex - 1;
+      [newImages[fromIndex], newImages[toIndex]] = [newImages[toIndex], newImages[fromIndex]];
+      newActiveIdx = toIndex;
+    } else if (direction === 'right' && fromIndex < newImages.length - 1) {
+      const toIndex = fromIndex + 1;
+      [newImages[fromIndex], newImages[toIndex]] = [newImages[toIndex], newImages[fromIndex]];
+      newActiveIdx = toIndex;
+    }
+
+    const newMain = newImages[0];
+
+    // Optimistic UI state update
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        return {
+          ...item,
+          images: newImages,
+          main_image: newMain,
+        };
+      })
+    );
+    setActiveImageIndexMap((prev) => ({ ...prev, [itemId]: newActiveIdx }));
+
+    if (isSupabaseConfigured) {
+      const updatedMeta = JSON.stringify({
+        main_image: newMain,
+        images: newImages,
+        makerworld_url: targetItem.makerworld_url,
+        slug: targetItem.slug,
+      });
+
+      const { error } = await supabase
+        .from('products')
+        .update({ image_url: updatedMeta })
+        .eq('id', itemId);
+
+      if (error) {
+        console.error('Supabase image reorder error:', error);
+        showToast(`Image order updated locally, Supabase failed: ${error.message}`);
+      } else {
+        showToast('Rearranged photos & saved in Supabase!');
+      }
+    } else {
+      showToast('Rearranged photo order');
+    }
+  };
+
+  // Rearrange / Reorder Catalog items in grid
+  const handleMoveProduct = (itemId: string, direction: 'left' | 'right') => {
+    const currentIdx = items.findIndex((i) => i.id === itemId);
+    if (currentIdx === -1) return;
+
+    const targetIdx = direction === 'left' ? currentIdx - 1 : currentIdx + 1;
+    if (targetIdx < 0 || targetIdx >= items.length) return;
+
+    const newItems = [...items];
+    [newItems[currentIdx], newItems[targetIdx]] = [newItems[targetIdx], newItems[currentIdx]];
+
+    setItems(newItems);
+    showToast(`Moved product ${direction === 'left' ? 'earlier' : 'later'} in catalog!`);
+  };
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedItemId(id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedItemId || draggedItemId === targetId) return;
+
+    const dragIdx = items.findIndex((i) => i.id === draggedItemId);
+    const dropIdx = items.findIndex((i) => i.id === targetId);
+
+    if (dragIdx === -1 || dropIdx === -1) return;
+
+    const newItems = [...items];
+    const [removed] = newItems.splice(dragIdx, 1);
+    newItems.splice(dropIdx, 0, removed);
+
+    setItems(newItems);
+    setDraggedItemId(null);
+    showToast('Reordered product catalog grid!');
+  };
+
   const handleDownloadPDF = () => {
     if (selectedIds.size === 0) {
       showToast('Please select at least 1 product to generate PDF catalog!');
@@ -434,6 +754,15 @@ export const Catalog: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center flex-wrap gap-2.5">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-purple-600 border border-purple-500/30 px-3.5 py-2.5 text-xs font-semibold text-white hover:bg-purple-500 transition-all shadow-md shadow-purple-500/20"
+              title="Add new product to catalog with image upload"
+            >
+              <Plus className="h-4 w-4" />
+              Add Product
+            </button>
+
             <button
               onClick={() => setIsBulkModalOpen(true)}
               className="flex items-center gap-2 rounded-xl bg-neutral-900 border border-neutral-800 px-3.5 py-2.5 text-xs font-semibold text-neutral-300 hover:text-white hover:bg-neutral-800 transition-all shadow-sm"
@@ -573,44 +902,84 @@ export const Catalog: React.FC = () => {
               return (
                 <div
                   key={item.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, item.id)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, item.id)}
                   className={`deferred-card group relative flex flex-col rounded-2xl border bg-neutral-900/30 overflow-hidden transition-all duration-300 ${
+                    draggedItemId === item.id ? 'opacity-40 border-dashed border-purple-500 scale-95' : ''
+                  } ${
                     isSelected
                       ? 'border-purple-500/50 shadow-xl shadow-purple-500/5'
                       : 'border-neutral-900 opacity-60 hover:opacity-100'
                   } ${!isSelected ? 'print:hidden' : 'print:bg-white print:border-2 print:border-slate-300 print:shadow-none print:break-inside-avoid print:rounded-2xl'}`}
                 >
-                  {/* Selection & Action Header Bar (Screen Mode) */}
+                  {/* Selection & Rearrange Header Bar (Screen Mode) */}
                   <div className="flex items-center justify-between px-3 py-2 bg-neutral-950/80 border-b border-neutral-900 print:hidden">
-                    <button
-                      onClick={() => handleToggleSelect(item.id)}
-                      className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                        isSelected ? 'text-emerald-400' : 'text-neutral-500 hover:text-neutral-300'
-                      }`}
-                    >
-                      {isSelected ? (
-                        <CheckSquare className="h-4 w-4 text-emerald-400 shrink-0" />
-                      ) : (
-                        <Square className="h-4 w-4 text-neutral-600 shrink-0" />
-                      )}
-                      <span>{isSelected ? 'Included in PDF' : 'Excluded'}</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <div className="cursor-grab active:cursor-grabbing text-neutral-600 hover:text-neutral-300" title="Drag to rearrange catalog card order">
+                        <GripVertical className="h-4 w-4" />
+                      </div>
+                      <button
+                        onClick={() => handleToggleSelect(item.id)}
+                        className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
+                          isSelected ? 'text-emerald-400' : 'text-neutral-500 hover:text-neutral-300'
+                        }`}
+                      >
+                        {isSelected ? (
+                          <CheckSquare className="h-4 w-4 text-emerald-400 shrink-0" />
+                        ) : (
+                          <Square className="h-4 w-4 text-neutral-600 shrink-0" />
+                        )}
+                        <span>{isSelected ? 'Included' : 'Excluded'}</span>
+                      </button>
+                    </div>
 
-                    {/* Permanent Delete Product Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteProduct(item.id, item.name);
-                      }}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
-                        deleteConfirmId === item.id
-                          ? 'bg-red-600 text-white animate-pulse border border-red-500 scale-105 shadow-md shadow-red-500/30'
-                          : 'bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900 hover:text-white'
-                      }`}
-                      title={deleteConfirmId === item.id ? 'Click again to confirm deletion' : 'Delete product from database'}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      <span>{deleteConfirmId === item.id ? 'Confirm Delete?' : 'Delete Product'}</span>
-                    </button>
+                    {/* Product Grid Rearrange Buttons & Permanent Delete Button */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleMoveProduct(item.id, 'left')}
+                        disabled={idx === 0}
+                        className="p-1 rounded bg-neutral-900 text-neutral-400 hover:text-white disabled:opacity-30 transition-colors"
+                        title="Move product earlier in catalog grid"
+                      >
+                        <ArrowLeft className="h-3 w-3" />
+                      </button>
+
+                      <button
+                        onClick={() => handleMoveProduct(item.id, 'right')}
+                        disabled={idx === filteredItems.length - 1}
+                        className="p-1 rounded bg-neutral-900 text-neutral-400 hover:text-white disabled:opacity-30 transition-colors"
+                        title="Move product later in catalog grid"
+                      >
+                        <ArrowRight className="h-3 w-3" />
+                      </button>
+
+                      <Link
+                        to={`/catalog/edit/${item.id}`}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-950/50 text-purple-300 border border-purple-800/60 hover:bg-purple-900 hover:text-white transition-all ml-1"
+                        title="Open dedicated editor page for this product"
+                      >
+                        <Edit className="h-3 w-3" />
+                        <span>Edit</span>
+                      </Link>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProduct(item.id, item.name);
+                        }}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ml-1 ${
+                          deleteConfirmId === item.id
+                            ? 'bg-red-600 text-white animate-pulse border border-red-500 scale-105 shadow-md shadow-red-500/30'
+                            : 'bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900 hover:text-white'
+                        }`}
+                        title={deleteConfirmId === item.id ? 'Click again to confirm deletion' : 'Delete product from database'}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        <span>{deleteConfirmId === item.id ? 'Confirm?' : 'Delete'}</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Main Active Photo Banner (Screen) */}
@@ -632,19 +1001,89 @@ export const Catalog: React.FC = () => {
                       }}
                     />
 
-                    {/* Delete Active Image Button (Hidden in Print) */}
-                    {hasImages && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteImage(item.id, activeImgIdx);
-                        }}
-                        className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-red-950/80 px-2.5 py-1 text-[10px] font-semibold text-red-300 border border-red-500/30 backdrop-blur-md hover:bg-red-900 transition-colors print:hidden"
-                        title="Delete current photo from gallery"
+                    {/* Delete & Upload Active Image Controls (Hidden in Print) */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 print:hidden">
+                      {hasImages && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteImage(item.id, activeImgIdx);
+                          }}
+                          className="flex items-center gap-1 rounded-full bg-red-950/80 px-2.5 py-1 text-[10px] font-semibold text-red-300 border border-red-500/30 backdrop-blur-md hover:bg-red-900 transition-colors"
+                          title="Delete current photo from gallery"
+                        >
+                          <Trash2 className="h-3 w-3 text-red-400" />
+                          <span>Remove</span>
+                        </button>
+                      )}
+
+                      <label
+                        className="flex items-center gap-1 rounded-full bg-emerald-950/80 px-2.5 py-1 text-[10px] font-semibold text-emerald-300 border border-emerald-500/30 backdrop-blur-md hover:bg-emerald-900 transition-colors cursor-pointer"
+                        title="Upload photo from computer to Supabase"
                       >
-                        <Trash2 className="h-3 w-3 text-red-400" />
-                        <span>Remove Photo</span>
-                      </button>
+                        {uploadingItemIdMap[item.id] ? (
+                          <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />
+                        ) : (
+                          <Upload className="h-3 w-3 text-emerald-400" />
+                        )}
+                        <span>{uploadingItemIdMap[item.id] ? 'Uploading...' : 'Upload Photo'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          disabled={uploadingItemIdMap[item.id]}
+                          onChange={(e) => {
+                            handleUploadImagesToItem(item.id, e.target.files);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Photo Rearrange Controls Overlay (Hidden in Print) */}
+                    {hasImages && item.images.length > 1 && (
+                      <div className="absolute bottom-2 left-2 flex items-center gap-1 z-10 print:hidden">
+                        {activeImgIdx > 0 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveImage(item.id, activeImgIdx, 'main');
+                            }}
+                            className="flex items-center gap-1 rounded-full bg-purple-950/90 px-2 py-0.5 text-[10px] font-bold text-purple-300 border border-purple-500/40 backdrop-blur-md hover:bg-purple-900 transition-colors shadow-md"
+                            title="Make this photo the main cover image"
+                          >
+                            <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                            <span>Set Main</span>
+                          </button>
+                        )}
+
+                        {activeImgIdx > 0 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveImage(item.id, activeImgIdx, 'left');
+                            }}
+                            className="p-1 rounded-full bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-800 backdrop-blur-md transition-colors"
+                            title="Move photo left"
+                          >
+                            <ArrowLeft className="h-3 w-3" />
+                          </button>
+                        )}
+
+                        {activeImgIdx < item.images.length - 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveImage(item.id, activeImgIdx, 'right');
+                            }}
+                            className="p-1 rounded-full bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-800 backdrop-blur-md transition-colors"
+                            title="Move photo right"
+                          >
+                            <ArrowRight className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     )}
 
                     {/* Navigation Buttons (Hidden in Print) */}
@@ -690,8 +1129,8 @@ export const Catalog: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Thumbnail Strip with Individual Delete Controls (Screen Mode) */}
-                  {hasImages && item.images.length > 1 && (
+                  {/* Thumbnail Strip with Individual Delete & Add Photo Controls (Screen Mode) */}
+                  {hasImages && (
                     <div className="flex items-center gap-1.5 px-3 py-2 bg-neutral-950/60 overflow-x-auto border-b border-neutral-900 scrollbar-none print:hidden">
                       {item.images.map((imgUrl, idx) => (
                         <div
@@ -718,6 +1157,30 @@ export const Catalog: React.FC = () => {
                           </button>
                         </div>
                       ))}
+
+                      {/* + Add Photo Tile */}
+                      <label
+                        className="group/add relative h-9 px-2 shrink-0 rounded-lg border border-dashed border-neutral-700 bg-neutral-900/80 hover:bg-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-emerald-300 flex items-center justify-center gap-1 cursor-pointer transition-all text-[10px] font-semibold"
+                        title="Upload image to this item"
+                      >
+                        {uploadingItemIdMap[item.id] ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-400" />
+                        ) : (
+                          <Plus className="h-3.5 w-3.5 text-emerald-400" />
+                        )}
+                        <span>Add Photo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          disabled={uploadingItemIdMap[item.id]}
+                          onChange={(e) => {
+                            handleUploadImagesToItem(item.id, e.target.files);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
                     </div>
                   )}
 
@@ -737,10 +1200,32 @@ export const Catalog: React.FC = () => {
 
                   {/* Item Title & Price Container */}
                   <div className="flex flex-col flex-grow p-4 space-y-3 print:p-3 print:space-y-2">
-                    <div>
+                    <div className="space-y-1.5">
                       <h3 className="text-sm font-bold text-neutral-100 print:text-slate-900 line-clamp-2 leading-snug group-hover:text-purple-300 transition-colors">
                         {item.name}
                       </h3>
+
+                      {/* Filament Weight in Grams, Dimensions & Print Time */}
+                      <div className="flex items-center flex-wrap gap-1.5 text-xs font-medium">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-950 border border-neutral-800 text-purple-300 print:bg-slate-100 print:border-slate-300 font-bold text-[11px]" title="Product weight in grams">
+                          <Scale className="h-3 w-3 text-purple-400 print:text-slate-700" />
+                          <span>{item.filament_weight ? `${item.filament_weight}g` : '40g'}</span>
+                        </span>
+
+                        {item.dimensions && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-950 border border-neutral-800 text-blue-300 print:bg-slate-100 print:border-slate-300 font-bold text-[10px]" title="Dimensions (L x B x H)">
+                            <Box className="h-3 w-3 text-blue-400 print:text-slate-700" />
+                            <span>{item.dimensions}</span>
+                          </span>
+                        )}
+
+                        {item.print_time && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-neutral-400 font-mono print:hidden" title="Print time (internal only)">
+                            <Clock className="h-3 w-3 text-neutral-500" />
+                            <span>{item.print_time}</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Price Input & Tag Section */}
@@ -847,6 +1332,160 @@ export const Catalog: React.FC = () => {
                 Apply to All Items
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= ADD NEW PRODUCT MODAL ================= */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 print:hidden">
+          <div className="w-full max-w-lg rounded-2xl border border-neutral-800 bg-neutral-900 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Plus className="h-5 w-5 text-emerald-400" />
+                <h2 className="text-lg font-bold text-neutral-100">Add Product to Catalog</h2>
+              </div>
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-neutral-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddProductSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">Product Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newProductName}
+                  onChange={(e) => setNewProductName(e.target.value)}
+                  className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-3 py-2 text-sm text-neutral-100 font-medium focus:outline-none focus:border-purple-500"
+                  placeholder="e.g. Articulated Dragon"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1">Price (₹)</label>
+                  <input
+                    type="number"
+                    value={newProductPrice}
+                    onChange={(e) => setNewProductPrice(e.target.value)}
+                    className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-3 py-2 text-sm text-neutral-100 font-bold focus:outline-none focus:border-purple-500"
+                    placeholder="299"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1">Print Time</label>
+                  <input
+                    type="text"
+                    value={newProductPrintTime}
+                    onChange={(e) => setNewProductPrintTime(e.target.value)}
+                    className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-3 py-2 text-sm text-neutral-100 font-medium focus:outline-none focus:border-purple-500"
+                    placeholder="e.g. 4h 30m"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1">Weight (g)</label>
+                  <input
+                    type="number"
+                    value={newProductWeight}
+                    onChange={(e) => setNewProductWeight(e.target.value)}
+                    className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-3 py-2 text-sm text-neutral-100 font-medium focus:outline-none focus:border-purple-500"
+                    placeholder="e.g. 85"
+                  />
+                </div>
+              </div>
+
+              {/* Dimensions Section (L x B x H) */}
+              <div>
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">Dimensions (LxBxH - Optional)</label>
+                <div className="grid grid-cols-4 gap-2">
+                  <input
+                    type="number"
+                    value={newDimL}
+                    onChange={(e) => setNewDimL(e.target.value)}
+                    className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-2.5 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-blue-500"
+                    placeholder="L (120)"
+                  />
+                  <input
+                    type="number"
+                    value={newDimB}
+                    onChange={(e) => setNewDimB(e.target.value)}
+                    className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-2.5 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-blue-500"
+                    placeholder="B (85)"
+                  />
+                  <input
+                    type="number"
+                    value={newDimH}
+                    onChange={(e) => setNewDimH(e.target.value)}
+                    className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-2.5 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-blue-500"
+                    placeholder="H (45)"
+                  />
+                  <select
+                    value={newDimUnit}
+                    onChange={(e) => setNewDimUnit(e.target.value as 'mm' | 'cm')}
+                    className="w-full rounded-xl bg-neutral-950 border border-neutral-800 px-2 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="mm">mm</option>
+                    <option value="cm">cm</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">Upload Product Image(s)</label>
+                <div className="relative rounded-xl border border-dashed border-neutral-700 bg-neutral-950 p-4 text-center hover:border-purple-500 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => setNewProductFiles(e.target.files)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="flex flex-col items-center gap-1.5 text-neutral-400">
+                    <Upload className="h-6 w-6 text-purple-400" />
+                    <span className="text-xs font-semibold text-neutral-200">
+                      {newProductFiles && newProductFiles.length > 0
+                        ? `${newProductFiles.length} file(s) selected`
+                        : 'Click or Drag & Drop images to upload'}
+                    </span>
+                    <span className="text-[10px] text-neutral-500">Stored automatically in Supabase Storage & Database</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-neutral-400 hover:text-white hover:bg-neutral-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAddingProduct}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-xs font-bold text-white shadow-lg hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50"
+                >
+                  {isAddingProduct ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Saving to Supabase...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" />
+                      <span>Save Product</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

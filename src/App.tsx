@@ -8,6 +8,7 @@ import { FilamentInventory } from './pages/FilamentInventory';
 import { MeeshoCategories } from './pages/MeeshoCategories';
 import { ProfitCalculator } from './pages/ProfitCalculator';
 import { Catalog } from './pages/Catalog';
+import { EditProduct } from './pages/EditProduct';
 import { Database, ShoppingBag, FileText, Layers, Settings as SettingsIcon, Store, Calculator, Grid } from 'lucide-react';
 
 const queryClient = new QueryClient({
@@ -131,7 +132,9 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Navigate to="/products" replace />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/products/edit/:id" element={<EditProduct />} />
           <Route path="/catalog" element={<Catalog />} />
+          <Route path="/catalog/edit/:id" element={<EditProduct />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/quotations" element={<Quotations />} />
           <Route path="/quotations/:id" element={<Quotations />} />
