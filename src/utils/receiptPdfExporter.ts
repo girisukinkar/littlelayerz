@@ -14,7 +14,7 @@ export function exportSaleReceiptPDF(sale: Sale) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(30, 30, 30);
-  doc.text('DEXTER 3D', pageWidth / 2, y, { align: 'center' });
+  doc.text('LITTLE LAYERZ', pageWidth / 2, y, { align: 'center' });
   y += 5;
 
   doc.setFont('helvetica', 'normal');

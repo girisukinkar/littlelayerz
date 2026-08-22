@@ -95,7 +95,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, isOpen, onClos
           {/* Brand Header */}
           <div className="text-center pb-2 border-b border-dashed border-neutral-800">
             <h3 className="text-2xl font-black tracking-tight text-white">
-              DEXTER 3D
+              LITTLE LAYERZ
             </h3>
             <p className="text-xs text-neutral-400 mt-0.5">
               Market Stall & 3D Creations Studio

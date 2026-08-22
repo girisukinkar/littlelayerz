@@ -21,9 +21,10 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   isSaving = false,
 }) => {
   const seller = (invoice.seller_snapshot || {
-    name: 'Dexter3D Studio',
-    state: 'Maharashtra',
-    state_code: '27',
+    name: 'Little Layerz',
+    state: 'Uttar Pradesh',
+    state_code: '09',
+    gstin: '09AANPW1625N1ZY',
   }) as Partial<BusinessProfile>;
 
   const customer = invoice.customer_snapshot || { name: 'Cash Customer' };

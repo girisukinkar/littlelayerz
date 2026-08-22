@@ -323,9 +323,10 @@ export const CreateInvoice: React.FC = () => {
       customer_id: selectedCustomerId || null,
       seller_snapshot: businessProfile || {
         id: '00000000-0000-0000-0000-000000000001',
-        name: 'Dexter3D Studio',
-        state: 'Maharashtra',
-        state_code: '27',
+        name: 'Little Layerz',
+        state: 'Uttar Pradesh',
+        state_code: '09',
+        gstin: '09AANPW1625N1ZY',
         invoice_prefix: 'INV',
         default_gst_rate: 18,
       },

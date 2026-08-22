@@ -10,29 +10,29 @@ function isValidUuid(id?: string | null): boolean {
 
 const DEFAULT_BUSINESS_PROFILE: BusinessProfile = {
   id: '00000000-0000-0000-0000-000000000001',
-  name: 'Dexter3D Studio',
+  name: 'Little Layerz',
   logo_url: '',
   upi_qr_url: '',
-  instagram_handle: 'dexter3d_official',
-  whatsapp_number: '+91 98765 43210',
-  website: 'https://dexter3d.in',
-  address: 'Shop No. 4, Tech Park Commercial Hub',
-  city: 'Pune',
-  state: 'Maharashtra',
-  state_code: '27',
-  pincode: '411057',
-  gstin: '27AAPFU0939F1ZV',
-  phone: '+91 98765 43210',
-  email: 'contact@dexter3d.in',
-  upi_id: 'dexter3d@okhdfcbank',
-  bank_name: 'HDFC Bank Ltd',
-  bank_account_no: '50200012345678',
-  bank_ifsc: 'HDFC0001234',
+  instagram_handle: 'littlelayerz',
+  whatsapp_number: '+918796837718',
+  website: 'https://littlelayerz.co.in',
+  address: 'Sector 5',
+  city: 'Ghaziabad',
+  state: 'Uttar Pradesh',
+  state_code: '09',
+  pincode: '201010',
+  gstin: '09AANPW1625N1ZY',
+  phone: '+918796837718',
+  email: 'littlelayerz@gmail.com',
+  upi_id: 'JKBMERC00814817@jkb',
+  bank_name: 'J&K Bank',
+  bank_account_no: '0463010100000965',
+  bank_ifsc: 'JAKA0MVIHAR',
   bank_branch: 'Hinjewadi Phase 1, Pune',
   invoice_prefix: 'INV',
   default_gst_rate: 18.0,
-  default_notes: 'Thank you for choosing Dexter3D Studio! We appreciate your business.',
-  default_terms: '1. Goods once sold will not be returned unless damaged upon receipt.\n2. In case of manufacturing defects, please report within 48 hours with unboxing video.',
+  default_notes: 'Thank you for choosing LittleLayerz We appreciate your business.',
+  default_terms: '1. Goods once sold will not be returned unless damaged upon receipt.',
 };
 
 export const businessService = {
@@ -48,6 +48,13 @@ export const businessService = {
         if (error) {
           console.warn('Supabase getProfile error, using local fallback:', error.message);
         } else if (data) {
+          // If stored data has old hardcoded demo gstin, replace with DEFAULT_BUSINESS_PROFILE
+          if (data.gstin === '27AAPFU0939F1ZV' || data.name === 'Dexter3D Studio') {
+            data.gstin = DEFAULT_BUSINESS_PROFILE.gstin;
+            data.name = DEFAULT_BUSINESS_PROFILE.name;
+            data.state = DEFAULT_BUSINESS_PROFILE.state;
+            data.state_code = DEFAULT_BUSINESS_PROFILE.state_code;
+          }
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
           return data as BusinessProfile;
         }
@@ -60,6 +67,23 @@ export const businessService = {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as BusinessProfile;
+        // Purge old demo gstin if present in localStorage
+        if (parsed.gstin === '27AAPFU0939F1ZV' || parsed.name === 'Dexter3D Studio') {
+          parsed.gstin = DEFAULT_BUSINESS_PROFILE.gstin;
+          parsed.name = DEFAULT_BUSINESS_PROFILE.name;
+          parsed.state = DEFAULT_BUSINESS_PROFILE.state;
+          parsed.state_code = DEFAULT_BUSINESS_PROFILE.state_code;
+          parsed.address = DEFAULT_BUSINESS_PROFILE.address;
+          parsed.city = DEFAULT_BUSINESS_PROFILE.city;
+          parsed.pincode = DEFAULT_BUSINESS_PROFILE.pincode;
+          parsed.email = DEFAULT_BUSINESS_PROFILE.email;
+          parsed.phone = DEFAULT_BUSINESS_PROFILE.phone;
+          parsed.upi_id = DEFAULT_BUSINESS_PROFILE.upi_id;
+          parsed.bank_name = DEFAULT_BUSINESS_PROFILE.bank_name;
+          parsed.bank_account_no = DEFAULT_BUSINESS_PROFILE.bank_account_no;
+          parsed.bank_ifsc = DEFAULT_BUSINESS_PROFILE.bank_ifsc;
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
+        }
         if (!isValidUuid(parsed.id)) {
           parsed.id = DEFAULT_BUSINESS_PROFILE.id;
         }
