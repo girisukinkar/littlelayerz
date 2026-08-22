@@ -39,6 +39,9 @@ function sanitizeInvoiceSellerSnapshot(inv: GstInvoiceRecord): GstInvoiceRecord 
       inv.seller_snapshot.pincode = '201010';
       inv.seller_snapshot.email = 'littlelayerz@gmail.com';
       inv.seller_snapshot.phone = '+918796837718';
+      inv.seller_snapshot.bank_branch = 'Indirapuram, Ghaziabad';
+    } else if (inv.seller_snapshot.bank_branch === 'Hinjewadi Phase 1, Pune') {
+      inv.seller_snapshot.bank_branch = 'Indirapuram, Ghaziabad';
     }
   }
   return inv;
