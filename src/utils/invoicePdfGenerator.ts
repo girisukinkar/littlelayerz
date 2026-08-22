@@ -515,13 +515,7 @@ export async function generateInvoicePDF(
     if (seller.bank_name) {
       doc.text(`Bank: ${seller.bank_name} | A/C: ${seller.bank_account_no || '-'}`, payTextX, bankTextY);
       bankTextY += 3.6;
-      const branchPart =
-        seller.bank_branch &&
-        seller.bank_branch !== '-' &&
-        seller.bank_branch !== 'Hinjewadi Phase 1, Pune'
-          ? ` | Branch: ${seller.bank_branch}`
-          : '';
-      doc.text(`IFSC: ${seller.bank_ifsc || '-'}${branchPart}`, payTextX, bankTextY);
+      doc.text(`IFSC: ${seller.bank_ifsc || '-'}`, payTextX, bankTextY);
       bankTextY += 3.6;
     }
     if (seller.upi_id) {
