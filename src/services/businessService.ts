@@ -28,7 +28,7 @@ const DEFAULT_BUSINESS_PROFILE: BusinessProfile = {
   bank_name: 'J&K Bank',
   bank_account_no: '0463010100000965',
   bank_ifsc: 'JAKA0MVIHAR',
-  bank_branch: 'Hinjewadi Phase 1, Pune',
+  bank_branch: 'Indirapuram, Ghaziabad',
   invoice_prefix: 'INV',
   default_gst_rate: 18.0,
   default_notes: 'Thank you for choosing LittleLayerz We appreciate your business.',

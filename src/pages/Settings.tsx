@@ -49,7 +49,7 @@ export const Settings: React.FC = () => {
     bank_name: 'J&K Bank',
     bank_account_no: '0463010100000965',
     bank_ifsc: 'JAKA0MVIHAR',
-    bank_branch: 'Hinjewadi Phase 1, Pune',
+    bank_branch: 'Indirapuram, Ghaziabad',
     invoice_prefix: 'INV',
     default_gst_rate: 18.0,
     default_notes: 'Thank you for choosing LittleLayerz We appreciate your business.',
@@ -492,6 +492,17 @@ export const Settings: React.FC = () => {
                       onChange={(e) => setProfile({ ...profile, bank_ifsc: e.target.value.toUpperCase() })}
                       placeholder="e.g. HDFC0001234"
                       className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-purple-500 font-mono uppercase"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-300 mb-1">Bank Branch</label>
+                    <input
+                      type="text"
+                      value={profile.bank_branch || ''}
+                      onChange={(e) => setProfile({ ...profile, bank_branch: e.target.value })}
+                      placeholder="e.g. Indirapuram, Ghaziabad"
+                      className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-purple-500"
                     />
                   </div>
                 </div>
