@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import type { GstInvoiceRecord } from '../types/gst';
 import { formatIndianCurrency } from './gstCalculations';
+import { formatStateWithCode } from './indianStates';
 
 /**
  * Pre-scales and loads an image into a clean white canvas Base64 Data URL.
@@ -162,7 +163,7 @@ export async function generateInvoicePDF(
     sellerLineY += 3.8;
   }
 
-  doc.text(`State: ${seller.state || 'Maharashtra'}`, textLeftX, sellerLineY);
+  doc.text(`State: ${formatStateWithCode(seller.state, seller.state_code) || 'Uttar Pradesh (09)'}`, textLeftX, sellerLineY);
   sellerLineY += 3.8;
 
   if (seller.phone || seller.email) {
@@ -177,7 +178,7 @@ export async function generateInvoicePDF(
   // Invoice Metadata Box (Right)
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(metaBoxX, metaBoxY, metaBoxWidth, 29, 2, 2, 'FD');
+  doc.roundedRect(metaBoxX, metaBoxY, metaBoxWidth, 34, 2, 2, 'FD');
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
@@ -187,31 +188,39 @@ export async function generateInvoicePDF(
 
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(71, 85, 105);
-  doc.text('Invoice Date:', metaBoxX + 4, metaBoxY + 12);
-  doc.text(invoice.invoice_date || '-', metaBoxX + metaBoxWidth - 4, metaBoxY + 12, { align: 'right' });
+  doc.text('Invoice Date:', metaBoxX + 4, metaBoxY + 11.5);
+  doc.text(invoice.invoice_date || '-', metaBoxX + metaBoxWidth - 4, metaBoxY + 11.5, { align: 'right' });
 
-  doc.text('Place of Supply:', metaBoxX + 4, metaBoxY + 18);
-  doc.text(invoice.place_of_supply || 'Maharashtra', metaBoxX + metaBoxWidth - 4, metaBoxY + 18, {
-    align: 'right',
-  });
+  doc.text('Place of Supply:', metaBoxX + 4, metaBoxY + 17);
+  doc.text(
+    formatStateWithCode(invoice.place_of_supply, invoice.place_of_supply_state_code) || 'Uttar Pradesh (09)',
+    metaBoxX + metaBoxWidth - 4,
+    metaBoxY + 17,
+    { align: 'right' }
+  );
 
-  doc.text('Status:', metaBoxX + 4, metaBoxY + 24);
+  doc.text('Reverse Charge:', metaBoxX + 4, metaBoxY + 22.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text(invoice.reverse_charge ? 'YES' : 'NO', metaBoxX + metaBoxWidth - 4, metaBoxY + 22.5, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+
+  doc.text('Status:', metaBoxX + 4, metaBoxY + 28);
   doc.setFont('helvetica', 'bold');
   if (isDraft) {
     doc.setTextColor(147, 51, 234); // Purple
-    doc.text('DRAFT (REVIEW)', metaBoxX + metaBoxWidth - 4, metaBoxY + 24, { align: 'right' });
+    doc.text('DRAFT (REVIEW)', metaBoxX + metaBoxWidth - 4, metaBoxY + 28, { align: 'right' });
   } else if (invoice.payment_status === 'paid') {
     doc.setTextColor(22, 163, 74); // Green
-    doc.text('PAID', metaBoxX + metaBoxWidth - 4, metaBoxY + 24, { align: 'right' });
+    doc.text('PAID', metaBoxX + metaBoxWidth - 4, metaBoxY + 28, { align: 'right' });
   } else if (invoice.payment_status === 'partial') {
     doc.setTextColor(217, 119, 6); // Amber
-    doc.text('PARTIAL', metaBoxX + metaBoxWidth - 4, metaBoxY + 24, { align: 'right' });
+    doc.text('PARTIAL', metaBoxX + metaBoxWidth - 4, metaBoxY + 28, { align: 'right' });
   } else {
     doc.setTextColor(220, 38, 38); // Red
-    doc.text('UNPAID', metaBoxX + metaBoxWidth - 4, metaBoxY + 24, { align: 'right' });
+    doc.text('UNPAID', metaBoxX + metaBoxWidth - 4, metaBoxY + 28, { align: 'right' });
   }
 
-  cursorY = Math.max(sellerLineY, metaBoxY + 31) + 2;
+  cursorY = Math.max(sellerLineY, metaBoxY + 36) + 2;
 
   // 5. Bill To & Ship To 2-Column Section
   doc.setDrawColor(226, 232, 240);
@@ -236,7 +245,12 @@ export async function generateInvoicePDF(
   billY += 3.8;
 
   if (customer.billing_address) {
-    const splitAddr = doc.splitTextToSize(customer.billing_address, colW - 4);
+    const rawBillAddr = customer.billing_address;
+    const fullBillAddr =
+      customer.pincode && !rawBillAddr.includes(customer.pincode)
+        ? `${rawBillAddr}${customer.city && !rawBillAddr.includes(customer.city) ? ', ' + customer.city : ''} - ${customer.pincode}`
+        : rawBillAddr;
+    const splitAddr = doc.splitTextToSize(fullBillAddr, colW - 4);
     doc.text(splitAddr, margin, billY);
     billY += splitAddr.length * 3.6;
   }
@@ -248,7 +262,11 @@ export async function generateInvoicePDF(
     billY += 3.8;
   }
 
-  doc.text(`State: ${customer.state || invoice.place_of_supply}`, margin, billY);
+  const custStateStr = formatStateWithCode(
+    customer.state || invoice.place_of_supply,
+    customer.state_code || invoice.place_of_supply_state_code
+  );
+  doc.text(`State: ${custStateStr}`, margin, billY);
   billY += 3.8;
 
   if (customer.phone) {
@@ -272,9 +290,13 @@ export async function generateInvoicePDF(
   doc.setTextColor(71, 85, 105);
   shipY += 3.8;
 
-  const shipAddress =
+  const rawShipAddr =
     invoice.shipping_address || customer.shipping_address || customer.billing_address || 'Same as Billing Address';
-  const splitShip = doc.splitTextToSize(shipAddress, colW - 4);
+  const fullShipAddr =
+    customer.pincode && rawShipAddr !== 'Same as Billing Address' && !rawShipAddr.includes(customer.pincode)
+      ? `${rawShipAddr}${customer.city && !rawShipAddr.includes(customer.city) ? ', ' + customer.city : ''} - ${customer.pincode}`
+      : rawShipAddr;
+  const splitShip = doc.splitTextToSize(fullShipAddr, colW - 4);
   doc.text(splitShip, shipX, shipY);
   shipY += splitShip.length * 3.6;
 
@@ -288,23 +310,25 @@ export async function generateInvoicePDF(
   // Total table width must strictly equal contentWidth (186mm)
   const cols: TableCol[] = hasItemDiscounts
     ? [
-        { key: 'idx', label: '#', w: 8, align: 'left' },
-        { key: 'desc', label: 'Item & Description', w: 60, align: 'left' },
+        { key: 'idx', label: '#', w: 7, align: 'left' },
+        { key: 'desc', label: 'Item & Description', w: 52, align: 'left' },
+        { key: 'hsn', label: 'HSN/SAC', w: 16, align: 'center' },
+        { key: 'qty', label: 'Qty', w: 14, align: 'center' },
+        { key: 'rate', label: 'Rate', w: 18, align: 'right' },
+        { key: 'disc', label: 'Discount', w: 16, align: 'right' },
+        { key: 'taxable', label: 'Taxable Value', w: 20, align: 'right' },
+        { key: 'gst', label: 'GST %', w: 15, align: 'center' },
+        { key: 'total', label: 'Amount', w: 28, align: 'right' },
+      ]
+    : [
+        { key: 'idx', label: '#', w: 7, align: 'left' },
+        { key: 'desc', label: 'Item & Description', w: 68, align: 'left' },
         { key: 'hsn', label: 'HSN/SAC', w: 18, align: 'center' },
         { key: 'qty', label: 'Qty', w: 14, align: 'center' },
         { key: 'rate', label: 'Rate', w: 20, align: 'right' },
-        { key: 'disc', label: 'Discount', w: 18, align: 'right' },
-        { key: 'taxable', label: 'Taxable Value', w: 22, align: 'right' },
-        { key: 'total', label: 'Amount', w: 26, align: 'right' },
-      ]
-    : [
-        { key: 'idx', label: '#', w: 8, align: 'left' },
-        { key: 'desc', label: 'Item & Description', w: 76, align: 'left' },
-        { key: 'hsn', label: 'HSN/SAC', w: 20, align: 'center' },
-        { key: 'qty', label: 'Qty', w: 16, align: 'center' },
-        { key: 'rate', label: 'Rate', w: 20, align: 'right' },
-        { key: 'taxable', label: 'Taxable Value', w: 22, align: 'right' },
-        { key: 'total', label: 'Amount', w: 24, align: 'right' },
+        { key: 'taxable', label: 'Taxable Value', w: 23, align: 'right' },
+        { key: 'gst', label: 'GST %', w: 16, align: 'center' },
+        { key: 'total', label: 'Amount', w: 20, align: 'right' },
       ];
 
   // Table Header Bar
@@ -419,19 +443,27 @@ export async function generateInvoicePDF(
       doc.text(pdfCurrency(item.taxable_amount), colX + cols[6].w - 3, rowBaselineY, { align: 'right' });
       colX += cols[6].w;
 
+      // GST %
+      doc.text(`${item.gst_rate ?? 18}%`, colX + cols[7].w / 2, rowBaselineY, { align: 'center' });
+      colX += cols[7].w;
+
       // Amount
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(15, 23, 42);
-      doc.text(pdfCurrency(item.line_total), colX + cols[7].w - 3, rowBaselineY, { align: 'right' });
+      doc.text(pdfCurrency(item.line_total), colX + cols[8].w - 3, rowBaselineY, { align: 'right' });
     } else {
       // Taxable Value
       doc.text(pdfCurrency(item.taxable_amount), colX + cols[5].w - 3, rowBaselineY, { align: 'right' });
       colX += cols[5].w;
 
+      // GST %
+      doc.text(`${item.gst_rate ?? 18}%`, colX + cols[6].w / 2, rowBaselineY, { align: 'center' });
+      colX += cols[6].w;
+
       // Amount
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(15, 23, 42);
-      doc.text(pdfCurrency(item.line_total), colX + cols[6].w - 3, rowBaselineY, { align: 'right' });
+      doc.text(pdfCurrency(item.line_total), colX + cols[7].w - 3, rowBaselineY, { align: 'right' });
     }
 
     cursorY += rowHeight;
@@ -541,11 +573,18 @@ export async function generateInvoicePDF(
     summaryRows.push({ label: 'Shipping Charges:', val: pdfCurrency(invoice.shipping_amount) });
   }
 
+  // Determine explicit tax rate percentages per Rule 46(l)
+  const uniqueRates = Array.from(new Set(items.map((it) => it.gst_rate ?? 18)));
+  const singleRate = uniqueRates.length === 1 ? uniqueRates[0] : null;
+
   if (invoice.is_inter_state) {
-    summaryRows.push({ label: 'IGST:', val: pdfCurrency(invoice.igst) });
+    const igstLabel = singleRate !== null ? `IGST @ ${singleRate}%:` : 'IGST:';
+    summaryRows.push({ label: igstLabel, val: pdfCurrency(invoice.igst) });
   } else {
-    summaryRows.push({ label: 'CGST:', val: pdfCurrency(invoice.cgst) });
-    summaryRows.push({ label: 'SGST:', val: pdfCurrency(invoice.sgst) });
+    const cgstLabel = singleRate !== null ? `CGST @ ${singleRate / 2}%:` : 'CGST:';
+    const sgstLabel = singleRate !== null ? `SGST @ ${singleRate / 2}%:` : 'SGST:';
+    summaryRows.push({ label: cgstLabel, val: pdfCurrency(invoice.cgst) });
+    summaryRows.push({ label: sgstLabel, val: pdfCurrency(invoice.sgst) });
   }
 
   summaryRows.push({ label: 'Total GST Amount:', val: pdfCurrency(invoice.total_gst), isBold: true });
@@ -595,7 +634,7 @@ export async function generateInvoicePDF(
     sumY += rowH;
   }
 
-  // 9. Signatory Block
+  // 9. Signatory Block & Statutory Computer-Generated Disclaimer (Rule 46(q))
   const sigY = Math.max(leftDetailY, sumY + 6);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
@@ -603,7 +642,12 @@ export async function generateInvoicePDF(
   doc.text(`For ${seller.name || 'Business'}`, pageWidth - margin - 3, sigY, { align: 'right' });
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7);
-  doc.text('Authorized Signatory', pageWidth - margin - 3, sigY + 11, { align: 'right' });
+  doc.setTextColor(100, 116, 139);
+  doc.text('Authorized Signatory', pageWidth - margin - 3, sigY + 10, { align: 'right' });
+  doc.setFontSize(6.5);
+  doc.text('This is a computer-generated invoice and requires no signature.', pageWidth - margin - 3, sigY + 14, {
+    align: 'right',
+  });
 
   // 10. Social Media & Website Footer (Clean ASCII Text)
   const socialHandles: string[] = [];

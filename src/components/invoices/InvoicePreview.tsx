@@ -1,6 +1,7 @@
 import React from 'react';
 import type { GstInvoiceRecord, BusinessProfile } from '../../types/gst';
 import { formatIndianCurrency } from '../../utils/gstCalculations';
+import { formatStateWithCode } from '../../utils/indianStates';
 import { Download, Share2, CheckCircle, FileText, Sparkles, AtSign, MessageCircle, Globe } from 'lucide-react';
 import { generateInvoicePDF } from '../../utils/invoicePdfGenerator';
 
@@ -163,11 +164,13 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                 <p className="text-slate-600 leading-relaxed text-[11px]">
                   {seller.address ? `${seller.address}, ` : ''}
                   {seller.city ? `${seller.city} ` : ''}
-                  {seller.pincode || ''}
+                  {seller.pincode ? `- ${seller.pincode}` : ''}
                 </p>
-                {/* State without bracket numbers */}
                 <p className="text-slate-600 text-[11px]">
-                  State: <span className="font-medium text-slate-800">{seller.state || 'Maharashtra'}</span>
+                  State:{' '}
+                  <span className="font-medium text-slate-800">
+                    {formatStateWithCode(seller.state, seller.state_code) || 'Uttar Pradesh (09)'}
+                  </span>
                 </p>
                 {(seller.phone || seller.email) && (
                   <p className="text-slate-500 text-[10px]">
@@ -178,22 +181,40 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
 
               {/* Buyer / Bill To */}
               <div className="space-y-1 bg-slate-50 p-3 rounded border border-slate-200">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-1 flex-wrap">
                   <span className="font-bold uppercase tracking-wider text-[10px] text-slate-500">Bill To</span>
-                  <span className="text-[10px] text-slate-500">
-                    Place of Supply: <b className="text-slate-800">{invoice.place_of_supply || 'Maharashtra'}</b>
-                  </span>
+                  <div className="text-[10px] text-slate-500 text-right">
+                    <span>
+                      Place of Supply:{' '}
+                      <b className="text-slate-800">
+                        {formatStateWithCode(invoice.place_of_supply, invoice.place_of_supply_state_code) ||
+                          'Uttar Pradesh (09)'}
+                      </b>
+                    </span>
+                    <span className="ml-2 font-mono font-semibold text-slate-600">
+                      Reverse Charge: <b>{invoice.reverse_charge ? 'YES' : 'NO'}</b>
+                    </span>
+                  </div>
                 </div>
                 <h4 className="font-bold text-slate-900 text-xs">{customer.name || 'Cash Customer'}</h4>
                 {customer.gstin && (
                   <p className="font-mono font-bold text-purple-700 text-[10px]">GSTIN: {customer.gstin}</p>
                 )}
                 <p className="text-slate-600 text-[11px] leading-relaxed">
-                  {invoice.billing_address || customer.billing_address || 'Same as shipping'}
+                  {(() => {
+                    const addr = invoice.billing_address || customer.billing_address || 'Same as shipping';
+                    if (customer.pincode && !addr.includes(customer.pincode)) {
+                      return `${addr}${customer.city && !addr.includes(customer.city) ? ', ' + customer.city : ''} - ${customer.pincode}`;
+                    }
+                    return addr;
+                  })()}
                 </p>
-                {/* State without bracket numbers */}
                 <p className="text-slate-500 text-[10px]">
-                  State: {customer.state || invoice.place_of_supply || 'Maharashtra'}
+                  State:{' '}
+                  {formatStateWithCode(
+                    customer.state || invoice.place_of_supply,
+                    customer.state_code || invoice.place_of_supply_state_code
+                  )}
                 </p>
                 {customer.phone && <p className="text-slate-500 text-[10px]">Phone: {customer.phone}</p>}
               </div>
@@ -349,23 +370,32 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                   </div>
                 )}
 
-                {invoice.is_inter_state ? (
-                  <div className="flex justify-between text-slate-600">
-                    <span>IGST:</span>
-                    <span className="font-mono">{formatIndianCurrency(invoice.igst || 0)}</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex justify-between text-slate-600">
-                      <span>CGST:</span>
-                      <span className="font-mono">{formatIndianCurrency(invoice.cgst || 0)}</span>
-                    </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span>SGST:</span>
-                      <span className="font-mono">{formatIndianCurrency(invoice.sgst || 0)}</span>
-                    </div>
-                  </>
-                )}
+                {(() => {
+                  const uniqueRates = Array.from(new Set(items.map((it) => it.gst_rate ?? 18)));
+                  const singleRate = uniqueRates.length === 1 ? uniqueRates[0] : null;
+
+                  if (invoice.is_inter_state) {
+                    return (
+                      <div className="flex justify-between text-slate-600">
+                        <span>{singleRate !== null ? `IGST @ ${singleRate}%:` : 'IGST:'}</span>
+                        <span className="font-mono">{formatIndianCurrency(invoice.igst || 0)}</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <div className="flex justify-between text-slate-600">
+                        <span>{singleRate !== null ? `CGST @ ${singleRate / 2}%:` : 'CGST:'}</span>
+                        <span className="font-mono">{formatIndianCurrency(invoice.cgst || 0)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>{singleRate !== null ? `SGST @ ${singleRate / 2}%:` : 'SGST:'}</span>
+                        <span className="font-mono">{formatIndianCurrency(invoice.sgst || 0)}</span>
+                      </div>
+                    </>
+                  );
+                })()}
 
                 {/* Grand Total Bar */}
                 <div
@@ -398,6 +428,15 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                     </div>
                   </>
                 )}
+
+                {/* Authorized Signatory & Rule 46 Proviso */}
+                <div className="pt-4 text-right space-y-1">
+                  <p className="text-[11px] text-slate-600 font-medium">For {seller.name || 'Little Layerz'}</p>
+                  <p className="text-[10px] text-slate-400 italic pt-3">Authorized Signatory</p>
+                  <p className="text-[9px] text-slate-400 font-sans">
+                    This is a computer-generated invoice and requires no signature.
+                  </p>
+                </div>
               </div>
             </div>
 

@@ -19,6 +19,7 @@ export function formatInvoicesForExport(invoices: GstInvoiceRecord[]) {
         'Customer Email': inv.customer_snapshot?.email || '',
         'Customer GSTIN': inv.customer_snapshot?.gstin || '',
         'Place of Supply': `${inv.place_of_supply} (${inv.place_of_supply_state_code})`,
+        'Reverse Charge': inv.reverse_charge ? 'YES' : 'NO',
         'Supply Type': inv.is_inter_state ? 'Inter-State (IGST)' : 'Intra-State (CGST+SGST)',
         'Product Name': it ? it.product_name_snapshot : '',
         'HSN / SAC': it ? it.hsn_sac_snapshot || '' : '',

@@ -109,6 +109,7 @@ export const gstInvoiceService = {
       invoice_date: invoice.invoice_date || new Date().toISOString().slice(0, 10),
       due_date: invoice.due_date || null,
       is_draft: Boolean(invoice.is_draft),
+      reverse_charge: Boolean(invoice.reverse_charge),
       place_of_supply: invoice.place_of_supply || 'Maharashtra',
       place_of_supply_state_code: invoice.place_of_supply_state_code || '27',
       is_inter_state: invoice.is_inter_state || false,

@@ -48,8 +48,9 @@ export const CreateInvoice: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
-  // Mode: Draft vs Final Tax Invoice
+  // Mode: Draft vs Final Tax Invoice & Reverse Charge (RCM)
   const [isDraft, setIsDraft] = useState(false);
+  const [reverseCharge, setReverseCharge] = useState(false);
 
   // Customer Form State
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
@@ -63,8 +64,8 @@ export const CreateInvoice: React.FC = () => {
   const [billingAddress, setBillingAddress] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
   const [sameAsBilling, setSameAsBilling] = useState(true);
-  const [placeOfSupplyCode, setPlaceOfSupplyCode] = useState('27'); // Maharashtra default
-  const [placeOfSupplyName, setPlaceOfSupplyName] = useState('Maharashtra');
+  const [placeOfSupplyCode, setPlaceOfSupplyCode] = useState('09'); // Uttar Pradesh default
+  const [placeOfSupplyName, setPlaceOfSupplyName] = useState('Uttar Pradesh');
 
   // Invoice Meta
   const [invoiceNumber, setInvoiceNumber] = useState('');
@@ -132,6 +133,7 @@ export const CreateInvoice: React.FC = () => {
           const existing = await gstInvoiceService.getInvoiceById(editInvoiceId);
           if (existing) {
             setIsDraft(Boolean(existing.is_draft));
+            setReverseCharge(Boolean(existing.reverse_charge));
             setInvoiceNumber(existing.invoice_number);
             setInvoiceDate(existing.invoice_date);
             setDueDate(existing.due_date || '');
@@ -314,6 +316,7 @@ export const CreateInvoice: React.FC = () => {
       invoice_date: invoiceDate,
       due_date: dueDate || null,
       is_draft: isDraft,
+      reverse_charge: reverseCharge,
       place_of_supply: placeOfSupplyName,
       place_of_supply_state_code: placeOfSupplyCode,
       is_inter_state: calculatedTotals.isInterState,
@@ -399,6 +402,7 @@ export const CreateInvoice: React.FC = () => {
     invoiceDate,
     dueDate,
     isDraft,
+    reverseCharge,
     placeOfSupplyName,
     placeOfSupplyCode,
     selectedCustomerId,
@@ -615,34 +619,45 @@ export const CreateInvoice: React.FC = () => {
           <div className={`lg:col-span-7 space-y-6 ${activeTab === 'preview' ? 'hidden lg:block' : 'block'}`}>
             {/* 1. Document Mode & Meta Details Bar */}
             <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-5 shadow-lg space-y-4">
-              {/* Document Type Selector (Final Tax Invoice vs Draft) */}
-              <div className="flex items-center justify-between bg-neutral-950 p-2 rounded-xl border border-neutral-800">
-                <span className="text-xs font-semibold text-neutral-300 ml-1">Document Type:</span>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setIsDraft(false)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      !isDraft
-                        ? 'bg-purple-600 text-white shadow'
-                        : 'text-neutral-400 hover:text-neutral-200'
-                    }`}
-                  >
-                    Official Tax Invoice
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsDraft(true)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
-                      isDraft
-                        ? 'bg-amber-600 text-white shadow'
-                        : 'text-neutral-400 hover:text-neutral-200'
-                    }`}
-                  >
-                    <Sparkles className="h-3 w-3" />
-                    <span>Draft Invoice (Review)</span>
-                  </button>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-neutral-950 p-2.5 rounded-xl border border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-neutral-300 ml-1">Document Type:</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsDraft(false)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        !isDraft
+                          ? 'bg-purple-600 text-white shadow'
+                          : 'text-neutral-400 hover:text-neutral-200'
+                      }`}
+                    >
+                      Official Tax Invoice
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsDraft(true)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                        isDraft
+                          ? 'bg-amber-600 text-white shadow'
+                          : 'text-neutral-400 hover:text-neutral-200'
+                      }`}
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      <span>Draft Invoice</span>
+                    </button>
+                  </div>
                 </div>
+
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-neutral-300 bg-neutral-900/80 px-2.5 py-1 rounded-lg border border-neutral-800">
+                  <input
+                    type="checkbox"
+                    checked={reverseCharge}
+                    onChange={(e) => setReverseCharge(e.target.checked)}
+                    className="rounded border-neutral-700 bg-neutral-950 text-purple-600 focus:ring-0"
+                  />
+                  <span>Reverse Charge (RCM): <b className={reverseCharge ? 'text-amber-400' : 'text-neutral-400'}>{reverseCharge ? 'YES' : 'NO'}</b></span>
+                </label>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

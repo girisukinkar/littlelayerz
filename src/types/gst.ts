@@ -107,6 +107,7 @@ export interface GstInvoiceRecord {
   invoice_date: string;
   due_date?: string | null;
   is_draft?: boolean;
+  reverse_charge?: boolean;
   place_of_supply: string;
   place_of_supply_state_code: string;
   is_inter_state: boolean;

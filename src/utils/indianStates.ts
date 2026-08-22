@@ -77,3 +77,27 @@ export function validateGstin(gstin: string): boolean {
   const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
   return gstinRegex.test(gstin.trim().toUpperCase());
 }
+
+/**
+ * Formats a state name and code into standard Rule 46 format e.g., "Uttar Pradesh (09)"
+ */
+export function formatStateWithCode(name?: string | null, code?: string | null): string {
+  if (!name || !name.trim()) return '';
+  const cleanName = name.trim();
+
+  // If state name already includes code pattern e.g. "Uttar Pradesh (09)"
+  if (/\(\d{2}\)$/.test(cleanName)) {
+    return cleanName;
+  }
+
+  let finalCode = code ? code.trim().padStart(2, '0') : null;
+  if (!finalCode || !/^\d{2}$/.test(finalCode)) {
+    const found = getStateByName(cleanName);
+    if (found) {
+      finalCode = found.code;
+    }
+  }
+
+  return finalCode ? `${cleanName} (${finalCode})` : cleanName;
+}
+
