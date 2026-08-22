@@ -3,9 +3,25 @@ import type { GstProduct } from '../types/gst';
 
 const LOCAL_STORAGE_KEY = 'd3d_gst_products';
 
+function isValidUuid(id?: string | null): boolean {
+  if (!id) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+}
+
+function generateUuid(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 const INITIAL_PRODUCTS: GstProduct[] = [
   {
-    id: 'prod-001',
+    id: 'a1111111-1111-4111-a111-111111111111',
     name: 'Custom 3D Printed Lithophane Lamp',
     sku: 'LITH-001',
     hsn_sac: '3926',
@@ -19,7 +35,7 @@ const INITIAL_PRODUCTS: GstProduct[] = [
     revenue_generated: 35000.0,
   },
   {
-    id: 'prod-002',
+    id: 'a2222222-2222-4222-a222-222222222222',
     name: 'Articulated Dragon Figurine (Silk PLA)',
     sku: 'DRAG-002',
     hsn_sac: '9503',
@@ -33,7 +49,7 @@ const INITIAL_PRODUCTS: GstProduct[] = [
     revenue_generated: 41600.0,
   },
   {
-    id: 'prod-003',
+    id: 'a3333333-3333-4333-a333-333333333333',
     name: 'Modular Hexagonal Desk Organizer',
     sku: 'DESK-003',
     hsn_sac: '3926',
@@ -47,7 +63,7 @@ const INITIAL_PRODUCTS: GstProduct[] = [
     revenue_generated: 18900.0,
   },
   {
-    id: 'prod-004',
+    id: 'a4444444-4444-4444-a444-444444444444',
     name: 'Custom Spotify Code Keychain',
     sku: 'KEY-004',
     hsn_sac: '3926',
@@ -61,7 +77,7 @@ const INITIAL_PRODUCTS: GstProduct[] = [
     revenue_generated: 21750.0,
   },
   {
-    id: 'prod-005',
+    id: 'a5555555-5555-4555-a555-555555555555',
     name: '3D Prototyping & CAD Design Service',
     sku: 'SRV-005',
     hsn_sac: '9983',
@@ -117,20 +133,20 @@ export const gstProductService = {
 
   async saveProduct(product: Partial<GstProduct>): Promise<GstProduct> {
     const products = await this.getProducts();
-    const isNew = !product.id;
-    const newId = product.id || `prod-${Date.now()}`;
+    const isNew = !product.id || !isValidUuid(product.id);
+    const newId = product.id && isValidUuid(product.id) ? product.id : generateUuid();
 
     const newRecord: GstProduct = {
       id: newId,
       name: product.name || 'Unnamed Product',
       sku: product.sku || null,
-      hsn_sac: product.hsn_sac ? product.hsn_sac.trim() : '3926',
-      default_price: Number(product.default_price) || 0.0,
-      default_gst_rate: product.default_gst_rate !== undefined ? Number(product.default_gst_rate) : 18.0,
+      hsn_sac: product.hsn_sac || '3926',
+      default_price: Number(product.default_price) || 0,
+      default_gst_rate: Number(product.default_gst_rate) || 18,
       description: product.description || null,
       category: product.category || 'General',
       unit: product.unit || 'PCS',
-      is_active: product.is_active !== undefined ? product.is_active : true,
+      is_active: product.is_active ?? true,
       total_sold: product.total_sold || 0,
       revenue_generated: product.revenue_generated || 0,
       created_at: product.created_at || new Date().toISOString(),
@@ -139,7 +155,7 @@ export const gstProductService = {
 
     let updatedList: GstProduct[];
     if (isNew) {
-      updatedList = [newRecord, ...products];
+      updatedList = [newRecord, ...products.filter((p) => p.id !== newId)];
     } else {
       updatedList = products.map((p) => (p.id === newId ? newRecord : p));
     }
@@ -170,7 +186,7 @@ export const gstProductService = {
     const filtered = products.filter((p) => p.id !== id);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
 
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && isValidUuid(id)) {
       try {
         await supabase.from('gst_products').delete().eq('id', id);
       } catch (err) {

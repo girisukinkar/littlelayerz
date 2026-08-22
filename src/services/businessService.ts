@@ -3,10 +3,19 @@ import type { BusinessProfile } from '../types/gst';
 
 const LOCAL_STORAGE_KEY = 'd3d_gst_business_profile';
 
+function isValidUuid(id?: string | null): boolean {
+  if (!id) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+}
+
 const DEFAULT_BUSINESS_PROFILE: BusinessProfile = {
-  id: 'biz-default-001',
+  id: '00000000-0000-0000-0000-000000000001',
   name: 'Dexter3D Studio',
   logo_url: '',
+  upi_qr_url: '',
+  instagram_handle: 'dexter3d_official',
+  whatsapp_number: '+91 98765 43210',
+  website: 'https://dexter3d.in',
   address: 'Shop No. 4, Tech Park Commercial Hub',
   city: 'Pune',
   state: 'Maharashtra',
@@ -15,7 +24,6 @@ const DEFAULT_BUSINESS_PROFILE: BusinessProfile = {
   gstin: '27AAPFU0939F1ZV',
   phone: '+91 98765 43210',
   email: 'contact@dexter3d.in',
-  website: 'https://dexter3d.in',
   upi_id: 'dexter3d@okhdfcbank',
   bank_name: 'HDFC Bank Ltd',
   bank_account_no: '50200012345678',
@@ -51,7 +59,11 @@ export const businessService = {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved) as BusinessProfile;
+        const parsed = JSON.parse(saved) as BusinessProfile;
+        if (!isValidUuid(parsed.id)) {
+          parsed.id = DEFAULT_BUSINESS_PROFILE.id;
+        }
+        return parsed;
       } catch {
         // ignore parse error
       }
@@ -62,9 +74,14 @@ export const businessService = {
 
   async updateProfile(profile: Partial<BusinessProfile>): Promise<BusinessProfile> {
     const current = await this.getProfile();
+    const finalId = isValidUuid(profile.id || current.id)
+      ? (profile.id || current.id)
+      : DEFAULT_BUSINESS_PROFILE.id;
+
     const updated: BusinessProfile = {
       ...current,
       ...profile,
+      id: finalId,
       updated_at: new Date().toISOString(),
     };
 

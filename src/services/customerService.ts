@@ -3,9 +3,25 @@ import type { GstCustomer } from '../types/gst';
 
 const LOCAL_STORAGE_KEY = 'd3d_gst_customers';
 
+function isValidUuid(id?: string | null): boolean {
+  if (!id) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+}
+
+function generateUuid(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 const INITIAL_CUSTOMERS: GstCustomer[] = [
   {
-    id: 'cust-001',
+    id: '11111111-1111-4111-a111-111111111111',
     name: 'Rahul Sharma',
     phone: '+91 98234 11223',
     email: 'rahul.sharma@example.com',
@@ -22,7 +38,7 @@ const INITIAL_CUSTOMERS: GstCustomer[] = [
     last_purchase_date: '2026-08-20',
   },
   {
-    id: 'cust-002',
+    id: '22222222-2222-4222-a222-222222222222',
     name: 'Neha Verma',
     phone: '+91 99887 66554',
     email: 'neha.verma@techdesign.io',
@@ -39,7 +55,7 @@ const INITIAL_CUSTOMERS: GstCustomer[] = [
     last_purchase_date: '2026-08-18',
   },
   {
-    id: 'cust-003',
+    id: '33333333-3333-4333-a333-333333333333',
     name: 'Amit Patel',
     phone: '+91 91234 56789',
     email: 'amit.patel@gujaratmotors.com',
@@ -98,8 +114,8 @@ export const customerService = {
 
   async saveCustomer(customer: Partial<GstCustomer>): Promise<GstCustomer> {
     const customers = await this.getCustomers();
-    const isNew = !customer.id;
-    const newId = customer.id || `cust-${Date.now()}`;
+    const isNew = !customer.id || !isValidUuid(customer.id);
+    const newId = customer.id && isValidUuid(customer.id) ? customer.id : generateUuid();
 
     const newRecord: GstCustomer = {
       id: newId,
@@ -123,7 +139,7 @@ export const customerService = {
 
     let updatedList: GstCustomer[];
     if (isNew) {
-      updatedList = [newRecord, ...customers];
+      updatedList = [newRecord, ...customers.filter((c) => c.id !== newId)];
     } else {
       updatedList = customers.map((c) => (c.id === newId ? newRecord : c));
     }
@@ -154,7 +170,7 @@ export const customerService = {
     const filtered = customers.filter((c) => c.id !== id);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
 
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && isValidUuid(id)) {
       try {
         await supabase.from('gst_customers').delete().eq('id', id);
       } catch (err) {
