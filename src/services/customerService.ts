@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import type { GstCustomer } from '../types/gst';
+import type { GstCustomer, GstInvoiceRecord } from '../types/gst';
 
 const LOCAL_STORAGE_KEY = 'd3d_gst_customers';
 
@@ -115,10 +115,7 @@ export const customerService = {
   },
 
   async deleteCustomer(id: string): Promise<void> {
-    const customers = await this.getCustomers();
-    const filtered = customers.filter((c) => c.id !== id);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
-
+    // Delete from Supabase first
     if (isSupabaseConfigured && isValidUuid(id)) {
       try {
         await supabase.from('gst_customers').delete().eq('id', id);
@@ -126,5 +123,48 @@ export const customerService = {
         console.warn('Error deleting customer from Supabase:', err);
       }
     }
+
+    // Patch localStorage cache directly
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as GstCustomer[];
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed.filter((c) => c.id !== id)));
+      } catch {
+        // ignore
+      }
+    }
+  },
+
+  /**
+   * Recalculates a customer's total_orders, total_spent, and last_purchase_date
+   * from their actual invoices and persists the updated stats.
+   * Call this after every invoice save.
+   */
+  async refreshCustomerStats(
+    customerId: string,
+    invoices: GstInvoiceRecord[]
+  ): Promise<void> {
+    if (!customerId || !isValidUuid(customerId)) return;
+
+    const customerInvoices = invoices.filter((inv) => inv.customer_id === customerId);
+    const totalOrders = customerInvoices.length;
+    const totalSpent = customerInvoices.reduce((sum, inv) => sum + (Number(inv.grand_total) || 0), 0);
+    const lastDate = customerInvoices
+      .map((inv) => inv.invoice_date)
+      .filter(Boolean)
+      .sort()
+      .reverse()[0] || null;
+
+    const customer = await this.getCustomerById(customerId);
+    if (!customer) return;
+
+    await this.saveCustomer({
+      ...customer,
+      total_orders: totalOrders,
+      total_spent: totalSpent,
+      last_purchase_date: lastDate,
+    });
   },
 };
+

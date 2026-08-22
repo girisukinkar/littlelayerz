@@ -456,6 +456,17 @@ export const CreateInvoice: React.FC = () => {
         customer_id: finalCustId,
       });
 
+      // Refresh this customer's running stats in the Customer Directory
+      if (finalCustId) {
+        try {
+          const allInvoices = await gstInvoiceService.getInvoices();
+          await customerService.refreshCustomerStats(finalCustId, allInvoices);
+        } catch (statsErr) {
+          // Non-critical — stats will sync on next load
+          console.warn('Could not refresh customer stats:', statsErr);
+        }
+      }
+
       if (shouldDownloadPdf) {
         triggerAlert(
           'success',

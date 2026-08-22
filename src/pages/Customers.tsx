@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import type { GstCustomer } from '../types/gst';
+import type { GstCustomer, GstInvoiceRecord } from '../types/gst';
 import { customerService } from '../services/customerService';
+import { gstInvoiceService } from '../services/gstInvoiceService';
 import { INDIAN_STATES, getStateCodeFromGstin, validateGstin } from '../utils/indianStates';
 import { formatIndianCurrency } from '../utils/gstCalculations';
 import {
@@ -13,6 +14,10 @@ import {
   Mail,
   MapPin,
   FilePlus,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
   CheckCircle2,
   AlertCircle,
   X,
@@ -21,6 +26,8 @@ import { useNavigate } from 'react-router-dom';
 
 export const Customers: React.FC = () => {
   const [customers, setCustomers] = useState<GstCustomer[]>([]);
+  const [allInvoices, setAllInvoices] = useState<GstInvoiceRecord[]>([]);
+  const [expandedCustomerId, setExpandedCustomerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,8 +60,12 @@ export const Customers: React.FC = () => {
   const loadCustomers = async () => {
     setLoading(true);
     try {
-      const data = await customerService.getCustomers();
-      setCustomers(data);
+      const [custData, invData] = await Promise.all([
+        customerService.getCustomers(),
+        gstInvoiceService.getInvoices(),
+      ]);
+      setCustomers(custData);
+      setAllInvoices(invData);
     } catch (err) {
       console.error(err);
       triggerAlert('error', 'Failed to load customers');
@@ -66,6 +77,23 @@ export const Customers: React.FC = () => {
   useEffect(() => {
     loadCustomers();
   }, []);
+
+  const toggleInvoices = (custId: string) => {
+    setExpandedCustomerId((prev) => (prev === custId ? null : custId));
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+      case 'partial':
+        return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+      case 'unpaid':
+        return 'bg-red-500/15 text-red-400 border-red-500/30';
+      default:
+        return 'bg-neutral-700/30 text-neutral-400 border-neutral-600/30';
+    }
+  };
 
   const openAddModal = () => {
     setEditingCustomer(null);
@@ -344,20 +372,108 @@ export const Customers: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-neutral-800/80 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-neutral-500 uppercase block">Total Spent</span>
-                    <span className="text-xs font-mono font-bold text-neutral-200">
-                      {formatIndianCurrency(cust.total_spent || 0)}
-                    </span>
+                <div className="mt-4 pt-3 border-t border-neutral-800/80">
+                  {/* Stats row */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <span className="text-[10px] text-neutral-500 uppercase block">Total Spent</span>
+                      <span className="text-xs font-mono font-bold text-neutral-200">
+                        {formatIndianCurrency(
+                          allInvoices
+                            .filter((inv) => inv.customer_id === cust.id)
+                            .reduce((s, inv) => s + (Number(inv.grand_total) || 0), 0) || cust.total_spent || 0
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => toggleInvoices(cust.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-neutral-700/40 text-neutral-300 border border-neutral-700 hover:bg-neutral-700/70 transition-all"
+                        title="View customer invoices"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>
+                          {allInvoices.filter((inv) => inv.customer_id === cust.id).length} Invoice
+                          {allInvoices.filter((inv) => inv.customer_id === cust.id).length !== 1 ? 's' : ''}
+                        </span>
+                        {expandedCustomerId === cust.id
+                          ? <ChevronUp className="h-3 w-3" />
+                          : <ChevronDown className="h-3 w-3" />}
+                      </button>
+                      <button
+                        onClick={() => navigate(`/invoices/new?customerId=${cust.id}`)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 transition-all"
+                        title="Create new invoice for this customer"
+                      >
+                        <FilePlus className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => navigate(`/invoices/new?customerId=${cust.id}`)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 transition-all"
-                  >
-                    <FilePlus className="h-3.5 w-3.5" />
-                    <span>Create Invoice</span>
-                  </button>
+
+                  {/* Expandable Invoice History */}
+                  {expandedCustomerId === cust.id && (
+                    <div className="mt-2 rounded-xl border border-neutral-700/60 overflow-hidden">
+                      {(() => {
+                        const custInvoices = allInvoices
+                          .filter((inv) => inv.customer_id === cust.id)
+                          .sort((a, b) => b.invoice_date.localeCompare(a.invoice_date));
+                        return custInvoices.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-xs text-neutral-500">
+                            No invoices yet for this customer.
+                          </div>
+                        ) : (
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="bg-neutral-800/60 border-b border-neutral-700/60">
+                                <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Invoice #</th>
+                                <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Date</th>
+                                <th className="text-right px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Amount</th>
+                                <th className="text-center px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Status</th>
+                                <th className="px-3 py-2"></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {custInvoices.map((inv, idx) => (
+                                <tr
+                                  key={inv.id}
+                                  className={`border-b border-neutral-800/40 hover:bg-neutral-800/30 transition-colors ${
+                                    idx === custInvoices.length - 1 ? 'border-none' : ''
+                                  }`}
+                                >
+                                  <td className="px-3 py-2 font-mono font-bold text-neutral-200">
+                                    {inv.is_draft && (
+                                      <span className="text-[9px] font-normal text-amber-400 border border-amber-500/30 bg-amber-500/10 rounded px-1 mr-1">DRAFT</span>
+                                    )}
+                                    {inv.invoice_number}
+                                  </td>
+                                  <td className="px-3 py-2 text-neutral-400">
+                                    {new Date(inv.invoice_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+                                  </td>
+                                  <td className="px-3 py-2 text-right font-mono font-semibold text-neutral-100">
+                                    {formatIndianCurrency(inv.grand_total)}
+                                  </td>
+                                  <td className="px-3 py-2 text-center">
+                                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize ${getStatusBadge(inv.payment_status)}`}>
+                                      {inv.payment_status}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <button
+                                      onClick={() => navigate(`/invoices/${inv.id}`)}
+                                      className="flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors"
+                                      title="Open invoice"
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
