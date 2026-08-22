@@ -438,21 +438,25 @@ export const CreateInvoice: React.FC = () => {
     setIsSaving(true);
     try {
       let finalCustId = selectedCustomerId;
-      if (!finalCustId) {
-        const newCust = await customerService.saveCustomer({
-          name: customerName,
-          phone: customerPhone || null,
-          email: customerEmail || null,
-          gstin: customerGstin || null,
-          billing_address: billingAddress || null,
-          shipping_address: sameAsBilling ? billingAddress || null : shippingAddress || null,
-          state: placeOfSupplyName,
-          state_code: placeOfSupplyCode,
-          total_orders: 1,
-          total_spent: calculatedTotals.grandTotal,
-          last_purchase_date: invoiceDate,
-        });
-        finalCustId = newCust.id;
+      if (!finalCustId && customerName && customerName.trim()) {
+        try {
+          const newCust = await customerService.saveCustomer({
+            name: customerName.trim(),
+            phone: customerPhone || null,
+            email: customerEmail || null,
+            gstin: customerGstin || null,
+            billing_address: billingAddress || null,
+            shipping_address: sameAsBilling ? billingAddress || null : shippingAddress || null,
+            state: placeOfSupplyName,
+            state_code: placeOfSupplyCode,
+            total_orders: 1,
+            total_spent: calculatedTotals.grandTotal,
+            last_purchase_date: invoiceDate,
+          });
+          finalCustId = newCust?.id || null;
+        } catch (custErr) {
+          console.warn('Could not auto-save customer record:', custErr);
+        }
       }
 
       const saved = await gstInvoiceService.saveInvoice({

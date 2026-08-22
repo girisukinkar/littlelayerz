@@ -180,13 +180,19 @@ export const gstInvoiceService = {
 
     if (isSupabaseConfigured) {
       try {
-        const { items: _itemsToOmit, ...invoicePayload } = newRecord;
+        const { items: _itemsToOmit, reverse_charge: _rcToOmit, ...invoicePayload } = newRecord;
         void _itemsToOmit;
+        void _rcToOmit;
         const { error: invoiceError } = await supabase.from('gst_invoices').upsert(invoicePayload, { onConflict: 'id' });
 
-        if (!invoiceError && items.length > 0) {
+        if (invoiceError) {
+          console.error('Supabase saveInvoice error:', invoiceError.message);
+        } else if (items.length > 0) {
           await supabase.from('gst_invoice_items').delete().eq('invoice_id', newId);
-          await supabase.from('gst_invoice_items').insert(items);
+          const { error: itemError } = await supabase.from('gst_invoice_items').insert(items);
+          if (itemError) {
+            console.error('Supabase saveInvoice items error:', itemError.message);
+          }
         }
       } catch (err) {
         console.warn('Error syncing invoice with Supabase:', err);
