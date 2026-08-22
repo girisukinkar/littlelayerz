@@ -490,6 +490,9 @@ export const CreateInvoice: React.FC = () => {
           customerService.getCustomers().then((res) => setCustomers(res)).catch(() => {});
         } catch (custErr) {
           console.warn('Could not auto-save customer record:', custErr);
+          // If we fail to save the customer, do not use the local generated ID for the invoice,
+          // as it will cause a foreign key constraint violation. Use null instead.
+          finalCustId = null;
         }
       }
 
