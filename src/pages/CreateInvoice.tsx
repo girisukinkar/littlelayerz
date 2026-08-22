@@ -486,7 +486,7 @@ export const CreateInvoice: React.FC = () => {
             total_spent: calculatedTotals.grandTotal,
             last_purchase_date: invoiceDate,
           });
-          finalCustId = savedCust?.id || null;
+          finalCustId = savedCust?.id || '';
           customerService.getCustomers().then((res) => setCustomers(res)).catch(() => {});
         } catch (custErr: any) {
           console.warn('Could not auto-save customer record:', custErr);
