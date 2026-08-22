@@ -22,6 +22,7 @@ import {
   Trash2,
   Copy,
   Save,
+  Download,
   Users,
   Search,
   CheckCircle2,
@@ -318,7 +319,7 @@ export const CreateInvoice: React.FC = () => {
       is_inter_state: calculatedTotals.isInterState,
       customer_id: selectedCustomerId || null,
       seller_snapshot: businessProfile || {
-        id: 'biz-default-001',
+        id: '00000000-0000-0000-0000-000000000001',
         name: 'Dexter3D Studio',
         state: 'Maharashtra',
         state_code: '27',
@@ -417,7 +418,7 @@ export const CreateInvoice: React.FC = () => {
     terms,
   ]);
 
-  const handleSaveAndGenerate = async () => {
+  const handleSave = async (shouldDownloadPdf = false) => {
     if (!customerName.trim()) {
       triggerAlert('error', 'Please enter or select a customer name.');
       return;
@@ -455,18 +456,26 @@ export const CreateInvoice: React.FC = () => {
         customer_id: finalCustId,
       });
 
-      triggerAlert(
-        'success',
-        isDraft
-          ? `Draft Invoice #${saved.invoice_number} saved!`
-          : `Tax Invoice #${saved.invoice_number} saved & generated!`
-      );
-
-      await generateInvoicePDF(saved, 'download');
+      if (shouldDownloadPdf) {
+        triggerAlert(
+          'success',
+          isDraft
+            ? `Draft Invoice #${saved.invoice_number} saved & downloaded!`
+            : `Tax Invoice #${saved.invoice_number} saved & downloaded!`
+        );
+        await generateInvoicePDF(saved, 'download');
+      } else {
+        triggerAlert(
+          'success',
+          isDraft
+            ? `Draft Invoice #${saved.invoice_number} saved to database!`
+            : `Tax Invoice #${saved.invoice_number} saved to database!`
+        );
+      }
 
       setTimeout(() => {
         navigate('/invoices');
-      }, 1200);
+      }, 1000);
     } catch (err) {
       console.error(err);
       triggerAlert('error', 'Failed to save invoice.');
@@ -519,10 +528,10 @@ export const CreateInvoice: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsPreviewModalOpen(true)}
-              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-neutral-900 border border-purple-500/40 text-purple-300 hover:bg-purple-950/40 text-xs font-bold transition-all shadow-md hover:scale-[1.02] active:scale-95"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-neutral-900 border border-purple-500/40 text-purple-300 hover:bg-purple-950/40 text-xs font-bold transition-all shadow-md hover:scale-[1.02] active:scale-95"
             >
               <Eye className="h-4 w-4 text-purple-400" />
-              <span>Preview Invoice</span>
+              <span>Preview</span>
             </button>
 
             {/* Mobile View Toggle */}
@@ -549,14 +558,28 @@ export const CreateInvoice: React.FC = () => {
               </button>
             </div>
 
+            {/* 1. Save (Only Store Data in Database) */}
             <button
               type="button"
-              onClick={handleSaveAndGenerate}
+              onClick={() => handleSave(false)}
+              disabled={isSaving}
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-neutral-900 border border-neutral-700 hover:bg-neutral-800 text-xs font-bold text-neutral-100 shadow transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+              title="Save to database without downloading PDF"
+            >
+              <Save className="h-4 w-4 text-emerald-400" />
+              <span>{isSaving ? 'Saving...' : 'Save'}</span>
+            </button>
+
+            {/* 2. Save & Download PDF */}
+            <button
+              type="button"
+              onClick={() => handleSave(true)}
               disabled={isSaving}
               className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-bold text-white shadow-lg shadow-purple-600/20 hover:from-purple-500 hover:to-indigo-500 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+              title="Save to database and download PDF"
             >
-              <Save className="h-4 w-4" />
-              <span>{isSaving ? 'Saving...' : isDraft ? 'Save & Download Draft PDF' : 'Save & Download Tax PDF'}</span>
+              <Download className="h-4 w-4" />
+              <span>{isSaving ? 'Saving...' : isDraft ? 'Save & Download Draft' : 'Save & Download PDF'}</span>
             </button>
           </div>
         </header>
@@ -1194,14 +1217,28 @@ export const CreateInvoice: React.FC = () => {
             <span>Preview</span>
           </button>
 
+          {/* Quick Save (Database Only) */}
           <button
             type="button"
-            onClick={handleSaveAndGenerate}
+            onClick={() => handleSave(false)}
+            disabled={isSaving}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 text-white text-xs font-bold transition-all disabled:opacity-50"
+            title="Save to Supabase without downloading PDF"
+          >
+            <Save className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Save</span>
+          </button>
+
+          {/* Quick Save & Download PDF */}
+          <button
+            type="button"
+            onClick={() => handleSave(true)}
             disabled={isSaving}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold hover:from-purple-500 hover:to-indigo-500 shadow-md transition-all disabled:opacity-50"
+            title="Save to Supabase and download PDF"
           >
-            <Save className="h-3.5 w-3.5" />
-            <span>{isSaving ? 'Saving...' : isDraft ? 'Save Draft' : 'Save Tax PDF'}</span>
+            <Download className="h-3.5 w-3.5" />
+            <span>{isSaving ? 'Saving...' : isDraft ? 'Save & PDF' : 'Save & PDF'}</span>
           </button>
         </div>
 
