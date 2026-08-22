@@ -362,6 +362,18 @@ export const Settings: React.FC = () => {
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-300 mb-1">Pincode</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={profile.pincode || ''}
+                      onChange={(e) => setProfile({ ...profile, pincode: e.target.value.replace(/\D/g, '') })}
+                      placeholder="e.g. 411057"
+                      className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 font-mono focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-medium text-neutral-300 mb-1">Registered Address</label>
                     <input
@@ -372,6 +384,7 @@ export const Settings: React.FC = () => {
                       className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:outline-none focus:border-purple-500"
                     />
                   </div>
+
 
                   <div>
                     <label className="block text-xs font-medium text-neutral-300 mb-1">Contact Phone</label>
