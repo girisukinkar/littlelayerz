@@ -54,7 +54,8 @@ export const gstInvoiceService = {
         const { data, error } = await supabase
           .from('gst_invoices')
           .select('*, items:gst_invoice_items(*)')
-          .order('invoice_date', { ascending: false });
+          .order('invoice_date', { ascending: false })
+          .order('created_at', { ascending: false });
 
         if (error) {
           console.warn('Supabase getInvoices error:', error.message);
@@ -187,15 +188,18 @@ export const gstInvoiceService = {
 
         if (invoiceError) {
           console.error('Supabase saveInvoice error:', invoiceError.message);
+          throw new Error(invoiceError.message);
         } else if (items.length > 0) {
           await supabase.from('gst_invoice_items').delete().eq('invoice_id', newId);
           const { error: itemError } = await supabase.from('gst_invoice_items').insert(items);
           if (itemError) {
             console.error('Supabase saveInvoice items error:', itemError.message);
+            throw new Error(itemError.message);
           }
         }
-      } catch (err) {
-        console.warn('Error syncing invoice with Supabase:', err);
+      } catch (err: any) {
+        console.error('Error saving invoice:', err);
+        throw err;
       }
     }
 

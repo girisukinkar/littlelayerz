@@ -174,8 +174,8 @@ export const InvoicesList: React.FC = () => {
       })
       .sort((a, b) => {
         if (sortField === 'date') {
-          const tA = new Date(a.invoice_date).getTime();
-          const tB = new Date(b.invoice_date).getTime();
+          const tA = new Date(a.created_at || a.invoice_date).getTime();
+          const tB = new Date(b.created_at || b.invoice_date).getTime();
           return sortOrder === 'desc' ? tB - tA : tA - tB;
         }
         if (sortField === 'amount') {
