@@ -485,21 +485,8 @@ export async function generateInvoicePDF(
   const summaryBoxX = pageWidth - margin - summaryBoxWidth; // 122mm
   const detailsBoxWidth = contentWidth - summaryBoxWidth - 6; // 104mm
 
-  // Left Details Block (Amount in Words)
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(15, 23, 42);
-  doc.text('Amount in Words:', margin, cursorY + 2.5);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(51, 65, 85);
-  const wordsSplit = doc.splitTextToSize(invoice.amount_in_words || 'Zero Rupees Only', detailsBoxWidth);
-  doc.text(wordsSplit, margin, cursorY + 6.5);
-
-  let leftDetailY = cursorY + 6.5 + wordsSplit.length * 3.6 + 3;
-
-  // Payment Box with optional UPI QR Code
+  // Left Details Block (Payment Box with optional UPI QR Code)
+  let leftDetailY = cursorY + 1;
   if (seller.bank_name || seller.upi_id || upiQrBase64) {
     const boxHeight = upiQrBase64 ? 26 : 20;
     doc.setFillColor(248, 250, 252);

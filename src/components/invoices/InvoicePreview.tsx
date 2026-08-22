@@ -286,17 +286,8 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
 
             {/* Calculation Summary Footer */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-3 border-t border-slate-200">
-              {/* Left Box: Words, Bank Details, UPI QR, Notes */}
+              {/* Left Box: Bank Details, UPI QR, Notes */}
               <div className="space-y-3">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Amount in Words
-                  </span>
-                  <p className="font-semibold text-slate-800 text-[11px] bg-slate-50 p-2 rounded border border-slate-200 leading-relaxed">
-                    {invoice.amount_in_words || 'Zero Rupees Only'}
-                  </p>
-                </div>
-
                 {/* Payment Instructions & UPI QR Code Image */}
                 {(seller.bank_name || seller.upi_id || seller.upi_qr_url) && (
                   <div className="bg-slate-50 p-2.5 rounded border border-slate-200 text-[10px] flex items-start gap-3">
