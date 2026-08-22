@@ -357,9 +357,9 @@ describe('GST Calculation Engine', () => {
   });
 
   it('18. GSTIN Validation and State Extraction', () => {
-    const gstin = '27AAPFU0939F1ZV'; // Valid Maharashtra GSTIN
+    const gstin = '09AANPW1625N1ZY'; // Valid Uttar Pradesh GSTIN
     expect(validateGstin(gstin)).toBe(true);
-    expect(getStateCodeFromGstin(gstin)).toBe('27');
+    expect(getStateCodeFromGstin(gstin)).toBe('09');
 
     const invalidGstin = '12345XYZ';
     expect(validateGstin(invalidGstin)).toBe(false);

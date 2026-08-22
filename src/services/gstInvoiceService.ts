@@ -27,6 +27,23 @@ const SUPABASE_CONFIRMED_KEY = 'd3d_supabase_invoices_confirmed';
 
 
 
+function sanitizeInvoiceSellerSnapshot(inv: GstInvoiceRecord): GstInvoiceRecord {
+  if (inv && inv.seller_snapshot) {
+    if (inv.seller_snapshot.gstin === '27AAPFU0939F1ZV' || inv.seller_snapshot.name === 'Dexter3D Studio') {
+      inv.seller_snapshot.gstin = '09AANPW1625N1ZY';
+      inv.seller_snapshot.name = 'Little Layerz';
+      inv.seller_snapshot.state = 'Uttar Pradesh';
+      inv.seller_snapshot.state_code = '09';
+      inv.seller_snapshot.address = 'Sector 5, Ghaziabad';
+      inv.seller_snapshot.city = 'Ghaziabad';
+      inv.seller_snapshot.pincode = '201010';
+      inv.seller_snapshot.email = 'littlelayerz@gmail.com';
+      inv.seller_snapshot.phone = '+918796837718';
+    }
+  }
+  return inv;
+}
+
 export const gstInvoiceService = {
   async getInvoices(): Promise<GstInvoiceRecord[]> {
     if (isSupabaseConfigured) {
@@ -40,12 +57,13 @@ export const gstInvoiceService = {
           console.warn('Supabase getInvoices error:', error.message);
           // Fall through to localStorage on error only
         } else {
+          const sanitized = (data || []).map((inv) => sanitizeInvoiceSellerSnapshot(inv as GstInvoiceRecord));
           // Supabase responded successfully (even empty array is authoritative)
           // Mark that Supabase is confirmed reachable
           localStorage.setItem(SUPABASE_CONFIRMED_KEY, 'true');
           // Sync to localStorage cache
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data || []));
-          return (data || []) as GstInvoiceRecord[];
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitized));
+          return sanitized;
         }
       } catch (err) {
         console.warn('Network error fetching invoices:', err);
@@ -57,7 +75,9 @@ export const gstInvoiceService = {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          return parsed.map((inv) => sanitizeInvoiceSellerSnapshot(inv as GstInvoiceRecord));
+        }
       } catch {
         // ignore parse error
       }
