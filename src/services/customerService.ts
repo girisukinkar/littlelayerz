@@ -116,17 +116,34 @@ export const customerService = {
 
     if (isSupabaseConfigured) {
       try {
+        const {
+          total_orders: _to,
+          total_spent: _ts,
+          last_purchase_date: _lpd,
+          ...dbPayload
+        } = newRecord;
+        void _to;
+        void _ts;
+        void _lpd;
+
         const { data, error } = await supabase
           .from('gst_customers')
-          .upsert(newRecord, { onConflict: 'id' })
+          .upsert(dbPayload, { onConflict: 'id' })
           .select()
           .single();
 
-        if (!error && data) {
-          return data as GstCustomer;
+        if (error) {
+          console.error('Error saving customer to Supabase:', error.message);
+          throw new Error(error.message);
+        } else if (data) {
+          return {
+            ...newRecord,
+            ...data,
+          } as GstCustomer;
         }
-      } catch (err) {
-        console.warn('Error saving customer to Supabase:', err);
+      } catch (err: any) {
+        console.error('Error saving customer to Supabase:', err);
+        throw err;
       }
     }
 

@@ -184,7 +184,14 @@ export const gstInvoiceService = {
         const { items: _itemsToOmit, reverse_charge: _rcToOmit, ...invoicePayload } = newRecord;
         void _itemsToOmit;
         void _rcToOmit;
-        const { error: invoiceError } = await supabase.from('gst_invoices').upsert(invoicePayload, { onConflict: 'id' });
+        let { error: invoiceError } = await supabase.from('gst_invoices').upsert(invoicePayload, { onConflict: 'id' });
+
+        if (invoiceError && invoiceError.message.includes('gst_invoices_customer_id_fkey')) {
+          console.warn('Customer foreign key missing, retrying invoice with customer_id: null');
+          const fallbackPayload = { ...invoicePayload, customer_id: null };
+          const retryRes = await supabase.from('gst_invoices').upsert(fallbackPayload, { onConflict: 'id' });
+          invoiceError = retryRes.error;
+        }
 
         if (invoiceError) {
           console.error('Supabase saveInvoice error:', invoiceError.message);
