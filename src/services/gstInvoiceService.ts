@@ -19,99 +19,13 @@ function generateUuid(): string {
   });
 }
 
-const INITIAL_INVOICES: GstInvoiceRecord[] = [
-  {
-    id: 'b1111111-1111-4111-a111-111111111111',
-    invoice_number: 'INV-0001',
-    invoice_date: '2026-08-20',
-    due_date: '2026-08-27',
-    place_of_supply: 'Maharashtra',
-    place_of_supply_state_code: '27',
-    is_inter_state: false,
-    customer_id: '11111111-1111-4111-a111-111111111111',
-    seller_snapshot: {
-      id: '00000000-0000-0000-0000-000000000001',
-      name: 'Dexter3D Studio',
-      address: 'Shop No. 4, Tech Park Commercial Hub',
-      city: 'Pune',
-      state: 'Maharashtra',
-      state_code: '27',
-      pincode: '411057',
-      gstin: '27AAPFU0939F1ZV',
-      phone: '+91 98765 43210',
-      email: 'contact@dexter3d.in',
-      website: 'https://dexter3d.in',
-      invoice_prefix: 'INV',
-      default_gst_rate: 18,
-    },
-    customer_snapshot: {
-      id: '11111111-1111-4111-a111-111111111111',
-      name: 'Rahul Sharma',
-      phone: '+91 98234 11223',
-      email: 'rahul.sharma@example.com',
-      gstin: '27AABCU9603R1ZM',
-      billing_address: 'Flat 402, Sunshine Heights, Baner Road, Pune',
-      shipping_address: 'Flat 402, Sunshine Heights, Baner Road, Pune',
-      city: 'Pune',
-      state: 'Maharashtra',
-      state_code: '27',
-    },
-    billing_address: 'Flat 402, Sunshine Heights, Baner Road, Pune',
-    shipping_address: 'Flat 402, Sunshine Heights, Baner Road, Pune',
-    subtotal: 1250.0,
-    item_discount_total: 0.0,
-    invoice_discount_type: 'fixed',
-    invoice_discount_value: 0.0,
-    invoice_discount_amount: 0.0,
-    shipping_amount: 0.0,
-    shipping_gst_rate: 0.0,
-    shipping_gst_amount: 0.0,
-    taxable_amount: 1250.0,
-    cgst: 112.5,
-    sgst: 112.5,
-    igst: 0.0,
-    total_gst: 225.0,
-    rounding_adjustment: 0.0,
-    grand_total: 1475.0,
-    amount_in_words: 'One Thousand Four Hundred Seventy-Five Rupees Only',
-    amount_paid: 1475.0,
-    balance_due: 0.0,
-    payment_status: 'paid',
-    payment_method: 'upi',
-    notes: 'Thank you for your order with Dexter3D Studio!',
-    terms: 'Goods once sold will not be returned unless damaged.',
-    items: [
-      {
-        id: 'c1111111-1111-4111-a111-111111111111',
-        invoice_id: 'b1111111-1111-4111-a111-111111111111',
-        product_id: 'a1111111-1111-4111-a111-111111111111',
-        product_name_snapshot: 'Custom 3D Printed Lithophane Lamp',
-        description_snapshot: 'Personalized night lamp with 3 curved photos and warm LED base.',
-        hsn_sac_snapshot: '3926',
-        quantity: 1,
-        unit: 'PCS',
-        unit_price: 1250.0,
-        gross_amount: 1250.0,
-        discount_type: 'fixed',
-        discount_value: 0,
-        discount_amount: 0,
-        taxable_amount: 1250.0,
-        gst_rate: 18.0,
-        cgst_rate: 9.0,
-        cgst_amount: 112.5,
-        sgst_rate: 9.0,
-        sgst_amount: 112.5,
-        igst_rate: 0.0,
-        igst_amount: 0.0,
-        gst_amount: 225.0,
-        line_total: 1475.0,
-        sort_order: 0,
-      },
-    ],
-    created_at: '2026-08-20T10:30:00Z',
-    updated_at: '2026-08-20T10:30:00Z',
-  },
-];
+// No hardcoded sample invoices — real data comes from Supabase or localStorage only.
+// This prevents fake demo records from polluting the live ledger.
+
+// Sentinel key to track if Supabase has been confirmed reachable
+const SUPABASE_CONFIRMED_KEY = 'd3d_supabase_invoices_confirmed';
+
+
 
 export const gstInvoiceService = {
   async getInvoices(): Promise<GstInvoiceRecord[]> {
@@ -124,27 +38,33 @@ export const gstInvoiceService = {
 
         if (error) {
           console.warn('Supabase getInvoices error:', error.message);
-        } else if (data && data.length > 0) {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-          return data as GstInvoiceRecord[];
+          // Fall through to localStorage on error only
+        } else {
+          // Supabase responded successfully (even empty array is authoritative)
+          // Mark that Supabase is confirmed reachable
+          localStorage.setItem(SUPABASE_CONFIRMED_KEY, 'true');
+          // Sync to localStorage cache
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data || []));
+          return (data || []) as GstInvoiceRecord[];
         }
       } catch (err) {
         console.warn('Network error fetching invoices:', err);
       }
     }
 
+    // Only use localStorage cache — never seed fake demo data
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch {
-        // ignore
+        // ignore parse error
       }
     }
 
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_INVOICES));
-    return INITIAL_INVOICES;
+    // Return empty list — user has no invoices yet
+    return [];
   },
 
   async getInvoiceById(id: string): Promise<GstInvoiceRecord | null> {
@@ -277,15 +197,24 @@ export const gstInvoiceService = {
   },
 
   async deleteInvoice(id: string): Promise<void> {
-    const invoices = await this.getInvoices();
-    const filtered = invoices.filter((inv) => inv.id !== id);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
-
+    // Delete from Supabase first (source of truth)
     if (isSupabaseConfigured && isValidUuid(id)) {
       try {
         await supabase.from('gst_invoices').delete().eq('id', id);
       } catch (err) {
         console.warn('Error deleting invoice from Supabase:', err);
+      }
+    }
+
+    // Then sync localStorage cache
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as GstInvoiceRecord[];
+        const filtered = parsed.filter((inv) => inv.id !== id);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
+      } catch {
+        // ignore
       }
     }
   },

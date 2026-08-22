@@ -19,78 +19,8 @@ function generateUuid(): string {
   });
 }
 
-const INITIAL_PRODUCTS: GstProduct[] = [
-  {
-    id: 'a1111111-1111-4111-a111-111111111111',
-    name: 'Custom 3D Printed Lithophane Lamp',
-    sku: 'LITH-001',
-    hsn_sac: '3926',
-    default_price: 1250.0,
-    default_gst_rate: 18.0,
-    description: 'Personalized cylindrical night lamp with 3 curved photos and warm LED base.',
-    category: 'Home Decor',
-    unit: 'PCS',
-    is_active: true,
-    total_sold: 28,
-    revenue_generated: 35000.0,
-  },
-  {
-    id: 'a2222222-2222-4222-a222-222222222222',
-    name: 'Articulated Dragon Figurine (Silk PLA)',
-    sku: 'DRAG-002',
-    hsn_sac: '9503',
-    default_price: 650.0,
-    default_gst_rate: 18.0,
-    description: '45cm flexible multi-jointed fantasy dragon printed in dual-tone silk PLA.',
-    category: 'Toys & Collectibles',
-    unit: 'PCS',
-    is_active: true,
-    total_sold: 64,
-    revenue_generated: 41600.0,
-  },
-  {
-    id: 'a3333333-3333-4333-a333-333333333333',
-    name: 'Modular Hexagonal Desk Organizer',
-    sku: 'DESK-003',
-    hsn_sac: '3926',
-    default_price: 450.0,
-    default_gst_rate: 18.0,
-    description: 'Magnetic interlocking pencil, pen and gadget stand with matte finish.',
-    category: 'Office & Stationery',
-    unit: 'PCS',
-    is_active: true,
-    total_sold: 42,
-    revenue_generated: 18900.0,
-  },
-  {
-    id: 'a4444444-4444-4444-a444-444444444444',
-    name: 'Custom Spotify Code Keychain',
-    sku: 'KEY-004',
-    hsn_sac: '3926',
-    default_price: 150.0,
-    default_gst_rate: 18.0,
-    description: 'Acrylic + 3D embossed scannable music track code with steel ring.',
-    category: 'Accessories',
-    unit: 'PCS',
-    is_active: true,
-    total_sold: 145,
-    revenue_generated: 21750.0,
-  },
-  {
-    id: 'a5555555-5555-4555-a555-555555555555',
-    name: '3D Prototyping & CAD Design Service',
-    sku: 'SRV-005',
-    hsn_sac: '9983',
-    default_price: 1500.0,
-    default_gst_rate: 18.0,
-    description: 'Custom mechanical engineering CAD modeling and slicing consultation.',
-    category: 'Services',
-    unit: 'HRS',
-    is_active: true,
-    total_sold: 12,
-    revenue_generated: 18000.0,
-  },
-];
+
+
 
 export const gstProductService = {
   async getProducts(): Promise<GstProduct[]> {
@@ -103,9 +33,11 @@ export const gstProductService = {
 
         if (error) {
           console.warn('Supabase getProducts error:', error.message);
-        } else if (data && data.length > 0) {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-          return data as GstProduct[];
+          // Fall through to localStorage on error
+        } else {
+          // Supabase responded — even empty is authoritative
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data || []));
+          return (data || []) as GstProduct[];
         }
       } catch (err) {
         console.warn('Network error fetching products:', err);
@@ -116,14 +48,14 @@ export const gstProductService = {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch {
         // ignore
       }
     }
 
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_PRODUCTS));
-    return INITIAL_PRODUCTS;
+    // No data at all — return empty
+    return [];
   },
 
   async getProductById(id: string): Promise<GstProduct | null> {

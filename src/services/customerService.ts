@@ -19,59 +19,6 @@ function generateUuid(): string {
   });
 }
 
-const INITIAL_CUSTOMERS: GstCustomer[] = [
-  {
-    id: '11111111-1111-4111-a111-111111111111',
-    name: 'Rahul Sharma',
-    phone: '+91 98234 11223',
-    email: 'rahul.sharma@example.com',
-    gstin: '27AABCU9603R1ZM',
-    billing_address: 'Flat 402, Sunshine Heights, Baner Road',
-    shipping_address: 'Flat 402, Sunshine Heights, Baner Road',
-    city: 'Pune',
-    state: 'Maharashtra',
-    state_code: '27',
-    pincode: '411045',
-    notes: 'Regular client for custom 3D figurines and prototypes',
-    total_orders: 4,
-    total_spent: 4580.0,
-    last_purchase_date: '2026-08-20',
-  },
-  {
-    id: '22222222-2222-4222-a222-222222222222',
-    name: 'Neha Verma',
-    phone: '+91 99887 66554',
-    email: 'neha.verma@techdesign.io',
-    gstin: '29ABCDE1234F1Z5',
-    billing_address: 'Plot 12, Indiranagar 100ft Road',
-    shipping_address: 'Plot 12, Indiranagar 100ft Road',
-    city: 'Bengaluru',
-    state: 'Karnataka',
-    state_code: '29',
-    pincode: '560038',
-    notes: 'Architectural model commissions (Inter-State IGST)',
-    total_orders: 2,
-    total_spent: 8900.0,
-    last_purchase_date: '2026-08-18',
-  },
-  {
-    id: '33333333-3333-4333-a333-333333333333',
-    name: 'Amit Patel',
-    phone: '+91 91234 56789',
-    email: 'amit.patel@gujaratmotors.com',
-    gstin: '24AAACP1234P1Z1',
-    billing_address: '45 Industrial Estate, GIDC',
-    shipping_address: '45 Industrial Estate, GIDC',
-    city: 'Ahmedabad',
-    state: 'Gujarat',
-    state_code: '24',
-    pincode: '382445',
-    notes: 'Bulk functional prototype parts',
-    total_orders: 1,
-    total_spent: 2400.0,
-    last_purchase_date: '2026-08-21',
-  },
-];
 
 export const customerService = {
   async getCustomers(): Promise<GstCustomer[]> {
@@ -84,9 +31,11 @@ export const customerService = {
 
         if (error) {
           console.warn('Supabase getCustomers error:', error.message);
-        } else if (data && data.length > 0) {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-          return data as GstCustomer[];
+          // Fall through to localStorage on network/query error
+        } else {
+          // Supabase responded — even empty is authoritative
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data || []));
+          return (data || []) as GstCustomer[];
         }
       } catch (err) {
         console.warn('Network error fetching customers:', err);
@@ -97,14 +46,14 @@ export const customerService = {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch {
         // ignore
       }
     }
 
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_CUSTOMERS));
-    return INITIAL_CUSTOMERS;
+    // No data at all — return empty, don't seed fake data
+    return [];
   },
 
   async getCustomerById(id: string): Promise<GstCustomer | null> {
