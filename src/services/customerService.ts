@@ -63,34 +63,53 @@ export const customerService = {
 
   async saveCustomer(customer: Partial<GstCustomer>): Promise<GstCustomer> {
     const customers = await this.getCustomers();
-    const isNew = !customer.id || !isValidUuid(customer.id);
-    const newId = customer.id && isValidUuid(customer.id) ? customer.id : generateUuid();
+    
+    // Check if customer already exists by ID, Phone, or Name
+    let existing: GstCustomer | undefined;
+    if (customer.id && isValidUuid(customer.id)) {
+      existing = customers.find((c) => c.id === customer.id);
+    }
+    if (!existing && customer.phone && customer.phone.trim()) {
+      const cleanPhone = customer.phone.replace(/[^0-9]/g, '');
+      if (cleanPhone.length >= 10) {
+        existing = customers.find((c) => {
+          const cPhone = (c.phone || '').replace(/[^0-9]/g, '');
+          return cPhone.length >= 10 && cPhone.slice(-10) === cleanPhone.slice(-10);
+        });
+      }
+    }
+    if (!existing && customer.name && customer.name.trim() && customer.name.trim().toLowerCase() !== 'cash customer') {
+      existing = customers.find((c) => c.name.trim().toLowerCase() === customer.name!.trim().toLowerCase());
+    }
+
+    const isNew = !existing && (!customer.id || !isValidUuid(customer.id));
+    const finalId = existing ? existing.id : (customer.id && isValidUuid(customer.id) ? customer.id : generateUuid());
 
     const newRecord: GstCustomer = {
-      id: newId,
-      name: customer.name || 'Unnamed Customer',
-      phone: customer.phone || null,
-      email: customer.email || null,
-      gstin: customer.gstin ? customer.gstin.trim().toUpperCase() : null,
-      billing_address: customer.billing_address || null,
-      shipping_address: customer.shipping_address || customer.billing_address || null,
-      city: customer.city || null,
-      state: customer.state || 'Maharashtra',
-      state_code: customer.state_code || '27',
-      pincode: customer.pincode || null,
-      notes: customer.notes || null,
-      total_orders: customer.total_orders || 0,
-      total_spent: customer.total_spent || 0,
-      last_purchase_date: customer.last_purchase_date || null,
-      created_at: customer.created_at || new Date().toISOString(),
+      id: finalId,
+      name: customer.name ? customer.name.trim() : (existing?.name || 'Unnamed Customer'),
+      phone: customer.phone !== undefined ? (customer.phone ? customer.phone.trim() : null) : (existing?.phone || null),
+      email: customer.email !== undefined ? (customer.email ? customer.email.trim() : null) : (existing?.email || null),
+      gstin: customer.gstin ? customer.gstin.trim().toUpperCase() : (existing?.gstin || null),
+      billing_address: customer.billing_address !== undefined ? (customer.billing_address ? customer.billing_address.trim() : null) : (existing?.billing_address || null),
+      shipping_address: customer.shipping_address !== undefined ? (customer.shipping_address ? customer.shipping_address.trim() : null) : (existing?.shipping_address || customer.billing_address || null),
+      city: customer.city !== undefined ? (customer.city ? customer.city.trim() : null) : (existing?.city || null),
+      state: customer.state || existing?.state || 'Uttar Pradesh',
+      state_code: customer.state_code || existing?.state_code || '09',
+      pincode: customer.pincode !== undefined ? (customer.pincode ? customer.pincode.trim() : null) : (existing?.pincode || null),
+      notes: customer.notes !== undefined ? customer.notes : (existing?.notes || null),
+      total_orders: (existing?.total_orders || 0) + (customer.total_orders || 0),
+      total_spent: (existing?.total_spent || 0) + (customer.total_spent || 0),
+      last_purchase_date: customer.last_purchase_date || existing?.last_purchase_date || new Date().toISOString().slice(0, 10),
+      created_at: existing?.created_at || customer.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
     let updatedList: GstCustomer[];
     if (isNew) {
-      updatedList = [newRecord, ...customers.filter((c) => c.id !== newId)];
+      updatedList = [newRecord, ...customers.filter((c) => c.id !== finalId)];
     } else {
-      updatedList = customers.map((c) => (c.id === newId ? newRecord : c));
+      updatedList = customers.map((c) => (c.id === finalId ? newRecord : c));
     }
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedList));

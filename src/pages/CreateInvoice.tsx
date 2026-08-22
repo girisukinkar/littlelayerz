@@ -56,6 +56,9 @@ export const CreateInvoice: React.FC = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [customerSearch, setCustomerSearch] = useState('');
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [showNameSuggestions, setShowNameSuggestions] = useState(false);
+  const [showPhoneSuggestions, setShowPhoneSuggestions] = useState(false);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -205,11 +208,40 @@ export const CreateInvoice: React.FC = () => {
     setCustomerGstin(c.gstin || '');
     setBillingAddress(c.billing_address || '');
     setShippingAddress(c.shipping_address || c.billing_address || '');
-    setPlaceOfSupplyCode(c.state_code || '27');
-    setPlaceOfSupplyName(c.state || 'Maharashtra');
+    setPlaceOfSupplyCode(c.state_code || '09');
+    setPlaceOfSupplyName(c.state || 'Uttar Pradesh');
     setSameAsBilling(!c.shipping_address || c.shipping_address === c.billing_address);
     setShowCustomerDropdown(false);
+    setShowNameSuggestions(false);
+    setShowPhoneSuggestions(false);
+    setShowAddressSuggestions(false);
   };
+
+  // Autocomplete matching lists
+  const nameSuggestions = useMemo(() => {
+    if (!customerName.trim() || selectedCustomerId) return [];
+    const q = customerName.trim().toLowerCase();
+    return customers.filter((c) => c.name && c.name.toLowerCase().includes(q));
+  }, [customerName, customers, selectedCustomerId]);
+
+  const phoneSuggestions = useMemo(() => {
+    const clean = customerPhone.replace(/[^0-9]/g, '');
+    if (clean.length < 3 || selectedCustomerId) return [];
+    return customers.filter((c) => {
+      const cPhone = (c.phone || '').replace(/[^0-9]/g, '');
+      return cPhone.includes(clean);
+    });
+  }, [customerPhone, customers, selectedCustomerId]);
+
+  const addressSuggestions = useMemo(() => {
+    if (!billingAddress.trim() || billingAddress.trim().length < 3 || selectedCustomerId) return [];
+    const q = billingAddress.trim().toLowerCase();
+    return customers.filter(
+      (c) =>
+        (c.billing_address && c.billing_address.toLowerCase().includes(q)) ||
+        (c.city && c.city.toLowerCase().includes(q))
+    );
+  }, [billingAddress, customers, selectedCustomerId]);
 
   // Line Item Handlers
   const handleAddItem = () => {
@@ -438,22 +470,24 @@ export const CreateInvoice: React.FC = () => {
     setIsSaving(true);
     try {
       let finalCustId = selectedCustomerId;
-      if (!finalCustId && customerName && customerName.trim()) {
+      if (customerName && customerName.trim() && customerName.trim().toLowerCase() !== 'cash customer') {
         try {
-          const newCust = await customerService.saveCustomer({
+          const savedCust = await customerService.saveCustomer({
+            id: finalCustId || undefined,
             name: customerName.trim(),
-            phone: customerPhone || null,
-            email: customerEmail || null,
-            gstin: customerGstin || null,
-            billing_address: billingAddress || null,
-            shipping_address: sameAsBilling ? billingAddress || null : shippingAddress || null,
+            phone: customerPhone ? customerPhone.trim() : null,
+            email: customerEmail ? customerEmail.trim() : null,
+            gstin: customerGstin ? customerGstin.trim().toUpperCase() : null,
+            billing_address: billingAddress ? billingAddress.trim() : null,
+            shipping_address: sameAsBilling ? (billingAddress ? billingAddress.trim() : null) : (shippingAddress ? shippingAddress.trim() : null),
             state: placeOfSupplyName,
             state_code: placeOfSupplyCode,
             total_orders: 1,
             total_spent: calculatedTotals.grandTotal,
             last_purchase_date: invoiceDate,
           });
-          finalCustId = newCust?.id || null;
+          finalCustId = savedCust?.id || null;
+          customerService.getCustomers().then((res) => setCustomers(res)).catch(() => {});
         } catch (custErr) {
           console.warn('Could not auto-save customer record:', custErr);
         }
@@ -783,29 +817,88 @@ export const CreateInvoice: React.FC = () => {
 
               {/* Customer Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                <div>
+                {/* 1. Customer Name Autocomplete */}
+                <div className="relative">
                   <label className="block text-xs font-medium text-neutral-300 mb-1">Customer Name *</label>
                   <input
                     type="text"
                     required
                     value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value);
+                      setSelectedCustomerId('');
+                      setShowNameSuggestions(true);
+                    }}
+                    onFocus={() => setShowNameSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowNameSuggestions(false), 200)}
                     placeholder="e.g. Rahul Sharma"
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 font-bold focus:border-purple-500 focus:outline-none"
                   />
+                  {showNameSuggestions && nameSuggestions.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                      {nameSuggestions.map((c) => (
+                        <div
+                          key={c.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            selectCustomer(c);
+                          }}
+                          className="p-2.5 hover:bg-neutral-800 cursor-pointer text-xs border-b border-neutral-800/50 flex items-center justify-between"
+                        >
+                          <div>
+                            <p className="font-bold text-neutral-200">{c.name}</p>
+                            <p className="text-[10px] text-neutral-400">
+                              {c.phone || c.email || 'No contact'} • {c.state}
+                            </p>
+                          </div>
+                          {c.gstin && <span className="font-mono text-[10px] text-purple-400 font-bold">{c.gstin}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-neutral-300 mb-1">Customer Phone</label>
+                {/* 2. Customer Phone Autocomplete */}
+                <div className="relative">
+                  <label className="block text-xs font-medium text-neutral-300 mb-1">Customer Phone / Mobile</label>
                   <input
                     type="text"
                     value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerPhone(e.target.value);
+                      setSelectedCustomerId('');
+                      setShowPhoneSuggestions(true);
+                    }}
+                    onFocus={() => setShowPhoneSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowPhoneSuggestions(false), 200)}
                     placeholder="+91 98765 43210"
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
                   />
+                  {showPhoneSuggestions && phoneSuggestions.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                      {phoneSuggestions.map((c) => (
+                        <div
+                          key={c.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            selectCustomer(c);
+                          }}
+                          className="p-2.5 hover:bg-neutral-800 cursor-pointer text-xs border-b border-neutral-800/50 flex items-center justify-between"
+                        >
+                          <div>
+                            <p className="font-bold text-neutral-200">{c.name}</p>
+                            <p className="text-[10px] text-neutral-400 font-mono">
+                              {c.phone} • {c.state}
+                            </p>
+                          </div>
+                          {c.gstin && <span className="font-mono text-[10px] text-purple-400 font-bold">{c.gstin}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
+                {/* 3. GSTIN */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-300 mb-1">GSTIN (Optional)</label>
                   <input
@@ -821,6 +914,7 @@ export const CreateInvoice: React.FC = () => {
                   />
                 </div>
 
+                {/* 4. Place of Supply */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-300 mb-1">
                     Place of Supply (State) *
@@ -845,15 +939,43 @@ export const CreateInvoice: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="sm:col-span-2">
+                {/* 5. Billing Address Autocomplete */}
+                <div className="sm:col-span-2 relative">
                   <label className="block text-xs font-medium text-neutral-300 mb-1">Billing Address</label>
                   <input
                     type="text"
                     value={billingAddress}
-                    onChange={(e) => setBillingAddress(e.target.value)}
+                    onChange={(e) => {
+                      setBillingAddress(e.target.value);
+                      setShowAddressSuggestions(true);
+                    }}
+                    onFocus={() => setShowAddressSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 200)}
                     placeholder="Full street address..."
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 focus:border-purple-500 focus:outline-none"
                   />
+                  {showAddressSuggestions && addressSuggestions.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                      {addressSuggestions.map((c) => (
+                        <div
+                          key={c.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            selectCustomer(c);
+                          }}
+                          className="p-2.5 hover:bg-neutral-800 cursor-pointer text-xs border-b border-neutral-800/50 flex items-center justify-between"
+                        >
+                          <div>
+                            <p className="font-bold text-neutral-200">{c.name}</p>
+                            <p className="text-[10px] text-neutral-400">
+                              {c.billing_address} • {c.state}
+                            </p>
+                          </div>
+                          {c.phone && <span className="font-mono text-[10px] text-neutral-400">{c.phone}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="sm:col-span-2">
