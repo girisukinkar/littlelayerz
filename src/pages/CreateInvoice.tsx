@@ -552,49 +552,39 @@ export const CreateInvoice: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-neutral-950 px-4 py-6 md:px-8 pb-24 text-neutral-100 selection:bg-purple-500/30 selection:text-purple-200">
+    <div className="min-h-screen bg-neutral-950 px-3 py-4 sm:px-6 sm:py-6 md:px-8 pb-32 text-neutral-100 selection:bg-purple-500/30 selection:text-purple-200">
       <div className="mx-auto max-w-7xl">
         {/* Top Header */}
-        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-neutral-900 pb-5 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-purple-900/30 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
-              <FileText className="h-5 w-5" />
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 border-b border-neutral-900 pb-4 sm:pb-5 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-purple-900/30 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+              <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tight text-neutral-50 flex items-center gap-2">
-                <span>{editInvoiceId ? 'Edit Invoice' : isDraft ? 'Create Draft Invoice' : 'Create GST Tax Invoice'}</span>
+              <h1 className="text-lg sm:text-2xl font-black tracking-tight text-neutral-50 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span>{editInvoiceId ? 'Edit Invoice' : isDraft ? 'Draft Invoice' : 'GST Tax Invoice'}</span>
                 {isDraft && (
-                  <span className="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">
-                    Draft Review Mode
+                  <span className="text-[10px] sm:text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">
+                    Draft Mode
                   </span>
                 )}
               </h1>
-              <p className="text-xs text-neutral-500 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 sm:line-clamp-none mt-0.5">
                 {isDraft
-                  ? 'Send preliminary draft invoice to customer for review before generating final tax invoice'
-                  : 'Fast WhatsApp order billing with automated CGST/SGST/IGST tax computations & PDF generation'}
+                  ? 'Send preliminary draft invoice to customer for review'
+                  : 'WhatsApp order billing with automated GST tax computations & PDF'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-            {/* Prominent Handy Preview Button */}
-            <button
-              type="button"
-              onClick={() => setIsPreviewModalOpen(true)}
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-neutral-900 border border-purple-500/40 text-purple-300 hover:bg-purple-950/40 text-xs font-bold transition-all shadow-md hover:scale-[1.02] active:scale-95"
-            >
-              <Eye className="h-4 w-4 text-purple-400" />
-              <span>Preview</span>
-            </button>
-
-            {/* Mobile View Toggle */}
-            <div className="flex lg:hidden bg-neutral-900 p-1 rounded-xl border border-neutral-800">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
+            {/* Mobile View Switcher */}
+            <div className="flex lg:hidden bg-neutral-900 p-0.5 rounded-xl border border-neutral-800">
               <button
                 type="button"
                 onClick={() => setActiveTab('editor')}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === 'editor' ? 'bg-purple-600 text-white' : 'text-neutral-400'
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'editor' ? 'bg-purple-600 text-white shadow' : 'text-neutral-400 hover:text-neutral-200'
                 }`}
               >
                 <Edit3 className="h-3.5 w-3.5" />
@@ -603,38 +593,51 @@ export const CreateInvoice: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('preview')}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === 'preview' ? 'bg-purple-600 text-white' : 'text-neutral-400'
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === 'preview' ? 'bg-purple-600 text-white shadow' : 'text-neutral-400 hover:text-neutral-200'
                 }`}
               >
                 <Eye className="h-3.5 w-3.5" />
-                <span>Side View</span>
+                <span>Preview</span>
               </button>
             </div>
 
-            {/* 1. Save (Only Store Data in Database) */}
-            <button
-              type="button"
-              onClick={() => handleSave(false)}
-              disabled={isSaving}
-              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-neutral-900 border border-neutral-700 hover:bg-neutral-800 text-xs font-bold text-neutral-100 shadow transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
-              title="Save to database without downloading PDF"
-            >
-              <Save className="h-4 w-4 text-emerald-400" />
-              <span>{isSaving ? 'Saving...' : 'Save'}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Preview Modal Button */}
+              <button
+                type="button"
+                onClick={() => setIsPreviewModalOpen(true)}
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-900 border border-purple-500/40 text-purple-300 hover:bg-purple-950/40 text-xs font-bold transition-all shadow-md hover:scale-[1.02] active:scale-95"
+              >
+                <Eye className="h-3.5 w-3.5 text-purple-400" />
+                <span className="hidden xs:inline sm:inline">Preview</span>
+              </button>
 
-            {/* 2. Save & Download PDF */}
-            <button
-              type="button"
-              onClick={() => handleSave(true)}
-              disabled={isSaving}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-bold text-white shadow-lg shadow-purple-600/20 hover:from-purple-500 hover:to-indigo-500 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
-              title="Save to database and download PDF"
-            >
-              <Download className="h-4 w-4" />
-              <span>{isSaving ? 'Saving...' : isDraft ? 'Save & Download Draft' : 'Save & Download PDF'}</span>
-            </button>
+              {/* 1. Save (Only Store Data in Database) */}
+              <button
+                type="button"
+                onClick={() => handleSave(false)}
+                disabled={isSaving}
+                className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-neutral-900 border border-neutral-700 hover:bg-neutral-800 text-xs font-bold text-neutral-100 shadow transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                title="Save to database without downloading PDF"
+              >
+                <Save className="h-3.5 w-3.5 text-emerald-400" />
+                <span>{isSaving ? 'Saving...' : 'Save'}</span>
+              </button>
+
+              {/* 2. Save & Download PDF */}
+              <button
+                type="button"
+                onClick={() => handleSave(true)}
+                disabled={isSaving}
+                className="flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-bold text-white shadow-lg shadow-purple-600/20 hover:from-purple-500 hover:to-indigo-500 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                title="Save to database and download PDF"
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span className="hidden xs:inline sm:inline">{isSaving ? 'Saving...' : isDraft ? 'Save Draft & PDF' : 'Save & PDF'}</span>
+                <span className="xs:hidden sm:hidden">{isSaving ? '...' : 'PDF'}</span>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -1027,7 +1030,7 @@ export const CreateInvoice: React.FC = () => {
                 {items.map((item, index) => (
                   <div
                     key={item.id || index}
-                    className="p-4 rounded-xl border border-neutral-800 bg-neutral-950 space-y-3 relative group"
+                    className="p-3 sm:p-4 rounded-xl border border-neutral-800 bg-neutral-950 space-y-2.5 sm:space-y-3 relative group"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-neutral-400">Item #{index + 1}</span>
@@ -1035,25 +1038,25 @@ export const CreateInvoice: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleDuplicateItem(index)}
-                          className="p-1 text-neutral-400 hover:text-purple-400 rounded transition-all"
+                          className="p-1.5 text-neutral-400 hover:text-purple-400 rounded-lg hover:bg-neutral-900 transition-all"
                           title="Duplicate item"
                         >
-                          <Copy className="h-3.5 w-3.5" />
+                          <Copy className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteItem(index)}
-                          className="p-1 text-neutral-400 hover:text-red-400 rounded transition-all"
+                          className="p-1.5 text-neutral-400 hover:text-red-400 rounded-lg hover:bg-neutral-900 transition-all"
                           title="Delete item"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                         </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <div className="space-y-2.5 sm:space-y-3">
                       {/* Product Selector / Name */}
-                      <div className="sm:col-span-6">
+                      <div>
                         <label className="block text-[10px] font-semibold uppercase text-neutral-400 mb-1">
                           Product Name *
                         </label>
@@ -1064,7 +1067,7 @@ export const CreateInvoice: React.FC = () => {
                             value={item.productName}
                             onChange={(e) => handleItemChange(index, 'productName', e.target.value)}
                             placeholder="e.g. Lithophane Lamp or select below"
-                            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-neutral-100 font-bold focus:border-purple-500 focus:outline-none"
+                            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-2 sm:py-1.5 text-xs text-neutral-100 font-bold focus:border-purple-500 focus:outline-none"
                           />
                           {products.length > 0 && (
                             <select
@@ -1073,7 +1076,7 @@ export const CreateInvoice: React.FC = () => {
                                 if (selected) handleProductSelect(index, selected);
                               }}
                               defaultValue=""
-                              className="w-full bg-neutral-900/60 border border-neutral-800/80 rounded-md px-2 py-1 text-[10px] text-neutral-400 focus:outline-none"
+                              className="w-full bg-neutral-900/60 border border-neutral-800/80 rounded-md px-2 py-1.5 sm:py-1 text-[11px] sm:text-[10px] text-neutral-400 focus:outline-none truncate"
                             >
                               <option value="" disabled>
                                 ⚡ Or select from saved catalogue...
@@ -1088,114 +1091,119 @@ export const CreateInvoice: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* HSN / SAC */}
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10px] font-semibold uppercase text-neutral-400 mb-1">
-                          HSN/SAC
-                        </label>
-                        <input
-                          type="text"
-                          value={item.hsnSac || ''}
-                          onChange={(e) => handleItemChange(index, 'hsnSac', e.target.value)}
-                          placeholder="3926"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-neutral-100 font-mono text-center focus:border-purple-500 focus:outline-none"
-                        />
+                      {/* Row 2: HSN (4 cols), Qty (3 cols), Unit Price (5 cols) on mobile */}
+                      <div className="grid grid-cols-12 gap-2 sm:gap-3">
+                        {/* HSN / SAC */}
+                        <div className="col-span-4 sm:col-span-4">
+                          <label className="block text-[10px] font-semibold uppercase text-neutral-400 mb-1">
+                            HSN/SAC
+                          </label>
+                          <input
+                            type="text"
+                            value={item.hsnSac || ''}
+                            onChange={(e) => handleItemChange(index, 'hsnSac', e.target.value)}
+                            placeholder="3926"
+                            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-2 sm:py-1.5 text-xs text-neutral-100 font-mono text-center focus:border-purple-500 focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Quantity & Unit */}
+                        <div className="col-span-3 sm:col-span-3">
+                          <label className="block text-[10px] font-semibold uppercase text-neutral-400 mb-1 text-center">
+                            Qty
+                          </label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="0.01"
+                            required
+                            value={item.quantity === 0 ? '' : item.quantity}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                              handleItemChange(index, 'quantity', isNaN(val) ? 0 : val);
+                            }}
+                            placeholder="1"
+                            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-1.5 py-2 sm:py-1.5 text-xs text-neutral-100 font-mono text-center focus:border-purple-500 focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Unit Price */}
+                        <div className="col-span-5 sm:col-span-5">
+                          <label className="block text-[10px] font-semibold uppercase text-neutral-400 mb-1 text-right">
+                            Unit Price (₹)
+                          </label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="0"
+                            required
+                            value={item.unitPrice === 0 ? '' : item.unitPrice}
+                            onFocus={(e) => e.target.select()}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                              handleItemChange(index, 'unitPrice', isNaN(val) ? 0 : val);
+                            }}
+                            placeholder="0.00"
+                            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-2 sm:py-1.5 text-xs text-neutral-100 font-mono text-right focus:border-purple-500 focus:outline-none"
+                          />
+                        </div>
                       </div>
 
-                      {/* Quantity & Unit */}
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10px] font-semibold uppercase text-neutral-400 mb-1">
-                          Quantity
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          min="0.01"
-                          required
-                          value={item.quantity === 0 ? '' : item.quantity}
-                          onFocus={(e) => e.target.select()}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                            handleItemChange(index, 'quantity', isNaN(val) ? 0 : val);
-                          }}
-                          placeholder="1"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-neutral-100 font-mono text-center focus:border-purple-500 focus:outline-none"
-                        />
-                      </div>
+                      {/* Row 3: Description & (Discount + GST Rate) */}
+                      <div className="space-y-2 pt-2 border-t border-neutral-900">
+                        {/* Item Description */}
+                        <div>
+                          <input
+                            type="text"
+                            value={item.description || ''}
+                            onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                            placeholder="Optional specifications / notes..."
+                            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-[11px] text-neutral-300 focus:border-purple-500 focus:outline-none"
+                          />
+                        </div>
 
-                      {/* Unit Price */}
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10px] font-semibold uppercase text-neutral-400 mb-1">
-                          Unit Price (₹)
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          min="0"
-                          required
-                          value={item.unitPrice === 0 ? '' : item.unitPrice}
-                          onFocus={(e) => e.target.select()}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                            handleItemChange(index, 'unitPrice', isNaN(val) ? 0 : val);
-                          }}
-                          placeholder="0.00"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-neutral-100 font-mono text-right focus:border-purple-500 focus:outline-none"
-                        />
-                      </div>
-                    </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* Item Discount */}
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              step="any"
+                              min="0"
+                              value={item.discountValue === 0 ? '' : (item.discountValue || '')}
+                              onFocus={(e) => e.target.select()}
+                              onChange={(e) => {
+                                const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                handleItemChange(index, 'discountValue', isNaN(val) ? 0 : val);
+                              }}
+                              placeholder="Discount"
+                              className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-1.5 text-[11px] text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
+                            />
+                            <select
+                              value={item.discountType || 'fixed'}
+                              onChange={(e) => handleItemChange(index, 'discountType', e.target.value as DiscountType)}
+                              className="bg-neutral-900 border border-neutral-800 rounded-lg px-1.5 py-1.5 text-[10px] text-neutral-300 focus:outline-none"
+                            >
+                              <option value="fixed">₹</option>
+                              <option value="percentage">%</option>
+                            </select>
+                          </div>
 
-                    {/* Secondary Row: Description, Discount, GST Rate */}
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1 border-t border-neutral-900">
-                      {/* Item Description */}
-                      <div className="sm:col-span-6">
-                        <input
-                          type="text"
-                          value={item.description || ''}
-                          onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                          placeholder="Optional specifications or customization details..."
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1 text-[11px] text-neutral-300 focus:border-purple-500 focus:outline-none"
-                        />
-                      </div>
-
-                      {/* Item Discount */}
-                      <div className="sm:col-span-3 flex items-center gap-1">
-                        <input
-                          type="number"
-                          step="any"
-                          min="0"
-                          value={item.discountValue === 0 ? '' : (item.discountValue || '')}
-                          onFocus={(e) => e.target.select()}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                            handleItemChange(index, 'discountValue', isNaN(val) ? 0 : val);
-                          }}
-                          placeholder="Discount (Optional)"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-1 text-[11px] text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
-                        />
-                        <select
-                          value={item.discountType || 'fixed'}
-                          onChange={(e) => handleItemChange(index, 'discountType', e.target.value as DiscountType)}
-                          className="bg-neutral-900 border border-neutral-800 rounded-lg px-1.5 py-1 text-[10px] text-neutral-300 focus:outline-none"
-                        >
-                          <option value="fixed">₹</option>
-                          <option value="percentage">%</option>
-                        </select>
-                      </div>
-
-                      {/* GST Rate */}
-                      <div className="sm:col-span-3 flex items-center gap-1">
-                        <select
-                          value={item.gstRate}
-                          onChange={(e) => handleItemChange(index, 'gstRate', parseFloat(e.target.value) || 0)}
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-1 text-[11px] text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
-                        >
-                          <option value={0}>GST 0%</option>
-                          <option value={5}>GST 5%</option>
-                          <option value={12}>GST 12%</option>
-                          <option value={18}>GST 18%</option>
-                          <option value={28}>GST 28%</option>
-                        </select>
+                          {/* GST Rate */}
+                          <div>
+                            <select
+                              value={item.gstRate}
+                              onChange={(e) => handleItemChange(index, 'gstRate', parseFloat(e.target.value) || 0)}
+                              className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-1.5 text-[11px] text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
+                            >
+                              <option value={0}>GST 0%</option>
+                              <option value={5}>GST 5%</option>
+                              <option value={12}>GST 12%</option>
+                              <option value={18}>GST 18%</option>
+                              <option value={28}>GST 28%</option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1379,46 +1387,48 @@ export const CreateInvoice: React.FC = () => {
         </div>
 
         {/* Sticky Floating Quick Action Bar (Always visible & handy at bottom) */}
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-neutral-900/95 backdrop-blur-md border border-neutral-800/90 px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-3">
-          <div className="flex items-center gap-2 pr-2 border-r border-neutral-800">
-            <span className="text-[11px] text-neutral-400">Total:</span>
-            <span className="font-mono font-bold text-sm text-purple-300">
+        <div className="fixed bottom-3 sm:bottom-4 left-3 right-3 sm:left-1/2 sm:-translate-x-1/2 sm:w-auto sm:max-w-xl z-40 bg-neutral-900/95 backdrop-blur-md border border-neutral-800/90 p-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-2xl flex items-center justify-between sm:justify-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 pr-2 border-r border-neutral-800 shrink-0">
+            <span className="text-[10px] sm:text-[11px] text-neutral-400">Total:</span>
+            <span className="font-mono font-bold text-xs sm:text-sm text-purple-300">
               {formatIndianCurrency(calculatedTotals.grandTotal)}
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsPreviewModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 text-xs font-bold transition-all"
-          >
-            <Eye className="h-3.5 w-3.5" />
-            <span>Preview</span>
-          </button>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              onClick={() => setIsPreviewModalOpen(true)}
+              className="flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 text-xs font-bold transition-all"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              <span className="hidden xs:inline sm:inline">Preview</span>
+            </button>
 
-          {/* Quick Save (Database Only) */}
-          <button
-            type="button"
-            onClick={() => handleSave(false)}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 text-white text-xs font-bold transition-all disabled:opacity-50"
-            title="Save to Supabase without downloading PDF"
-          >
-            <Save className="h-3.5 w-3.5 text-emerald-400" />
-            <span>Save</span>
-          </button>
+            {/* Quick Save (Database Only) */}
+            <button
+              type="button"
+              onClick={() => handleSave(false)}
+              disabled={isSaving}
+              className="flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 text-white text-xs font-bold transition-all disabled:opacity-50"
+              title="Save to Supabase without downloading PDF"
+            >
+              <Save className="h-3.5 w-3.5 text-emerald-400" />
+              <span>{isSaving ? '...' : 'Save'}</span>
+            </button>
 
-          {/* Quick Save & Download PDF */}
-          <button
-            type="button"
-            onClick={() => handleSave(true)}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold hover:from-purple-500 hover:to-indigo-500 shadow-md transition-all disabled:opacity-50"
-            title="Save to Supabase and download PDF"
-          >
-            <Download className="h-3.5 w-3.5" />
-            <span>{isSaving ? 'Saving...' : isDraft ? 'Save & PDF' : 'Save & PDF'}</span>
-          </button>
+            {/* Quick Save & Download PDF */}
+            <button
+              type="button"
+              onClick={() => handleSave(true)}
+              disabled={isSaving}
+              className="flex items-center gap-1 px-3 sm:px-4 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold hover:from-purple-500 hover:to-indigo-500 shadow-md transition-all disabled:opacity-50"
+              title="Save to Supabase and download PDF"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>{isSaving ? '...' : isDraft ? 'Draft PDF' : 'Save & PDF'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Fullscreen High-Res Invoice Preview Modal */}
