@@ -1112,8 +1112,13 @@ export const CreateInvoice: React.FC = () => {
                           step="any"
                           min="0.01"
                           required
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                          value={item.quantity === 0 ? '' : item.quantity}
+                          onFocus={(e) => e.target.select()}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                            handleItemChange(index, 'quantity', isNaN(val) ? 0 : val);
+                          }}
+                          placeholder="1"
                           className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-neutral-100 font-mono text-center focus:border-purple-500 focus:outline-none"
                         />
                       </div>
@@ -1128,8 +1133,13 @@ export const CreateInvoice: React.FC = () => {
                           step="any"
                           min="0"
                           required
-                          value={item.unitPrice}
-                          onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          value={item.unitPrice === 0 ? '' : item.unitPrice}
+                          onFocus={(e) => e.target.select()}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                            handleItemChange(index, 'unitPrice', isNaN(val) ? 0 : val);
+                          }}
+                          placeholder="0.00"
                           className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-neutral-100 font-mono text-right focus:border-purple-500 focus:outline-none"
                         />
                       </div>
@@ -1154,8 +1164,12 @@ export const CreateInvoice: React.FC = () => {
                           type="number"
                           step="any"
                           min="0"
-                          value={item.discountValue || ''}
-                          onChange={(e) => handleItemChange(index, 'discountValue', parseFloat(e.target.value) || 0)}
+                          value={item.discountValue === 0 ? '' : (item.discountValue || '')}
+                          onFocus={(e) => e.target.select()}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                            handleItemChange(index, 'discountValue', isNaN(val) ? 0 : val);
+                          }}
                           placeholder="Discount (Optional)"
                           className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2 py-1 text-[11px] text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
                         />
@@ -1205,9 +1219,13 @@ export const CreateInvoice: React.FC = () => {
                       type="number"
                       step="any"
                       min="0"
-                      value={invoiceDiscountValue || ''}
-                      onChange={(e) => setInvoiceDiscountValue(parseFloat(e.target.value) || 0)}
-                      placeholder="0"
+                      value={invoiceDiscountValue === 0 ? '' : invoiceDiscountValue}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                        setInvoiceDiscountValue(isNaN(val) ? 0 : val);
+                      }}
+                      placeholder="0.00"
                       className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
                     />
                     <select
@@ -1229,9 +1247,13 @@ export const CreateInvoice: React.FC = () => {
                       type="number"
                       step="any"
                       min="0"
-                      value={shippingAmount || ''}
-                      onChange={(e) => setShippingAmount(parseFloat(e.target.value) || 0)}
-                      placeholder="e.g. 100"
+                      value={shippingAmount === 0 ? '' : shippingAmount}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                        setShippingAmount(isNaN(val) ? 0 : val);
+                      }}
+                      placeholder="0.00"
                       className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
                     />
                     <select
@@ -1266,9 +1288,13 @@ export const CreateInvoice: React.FC = () => {
                     step="any"
                     min="0"
                     disabled={isFullPaymentChecked}
-                    value={isFullPaymentChecked ? calculatedTotals.grandTotal : amountPaid || ''}
-                    onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
-                    placeholder="0"
+                    value={isFullPaymentChecked ? calculatedTotals.grandTotal : (amountPaid === 0 ? '' : amountPaid)}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                      setAmountPaid(isNaN(val) ? 0 : val);
+                    }}
+                    placeholder="0.00"
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 font-mono font-bold focus:border-purple-500 focus:outline-none disabled:opacity-60"
                   />
                 </div>
