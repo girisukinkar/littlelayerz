@@ -30,6 +30,8 @@ import {
   Edit3,
   Percent,
   Sparkles,
+  X,
+  Maximize2,
 } from 'lucide-react';
 
 export const CreateInvoice: React.FC = () => {
@@ -43,8 +45,9 @@ export const CreateInvoice: React.FC = () => {
   const [products, setProducts] = useState<GstProduct[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
-  // Mode: Draft / Proforma vs Final Tax Invoice
+  // Mode: Draft vs Final Tax Invoice
   const [isDraft, setIsDraft] = useState(false);
 
   // Customer Form State
@@ -120,7 +123,7 @@ export const CreateInvoice: React.FC = () => {
         setCustomers(custs);
         setProducts(prods);
 
-        setNotes(biz.default_notes || 'Thank you for your business!');
+        setNotes(biz.default_notes || 'Thank you for choosing us! We appreciate your business.');
         setTerms(biz.default_terms || 'Goods once sold will not be returned unless damaged.');
 
         if (editInvoiceId) {
@@ -455,7 +458,7 @@ export const CreateInvoice: React.FC = () => {
       triggerAlert(
         'success',
         isDraft
-          ? `Draft Estimate #${saved.invoice_number} saved!`
+          ? `Draft Invoice #${saved.invoice_number} saved!`
           : `Tax Invoice #${saved.invoice_number} saved & generated!`
       );
 
@@ -486,7 +489,7 @@ export const CreateInvoice: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-neutral-950 px-4 py-6 md:px-8 text-neutral-100 selection:bg-purple-500/30 selection:text-purple-200">
+    <div className="min-h-screen bg-neutral-950 px-4 py-6 md:px-8 pb-24 text-neutral-100 selection:bg-purple-500/30 selection:text-purple-200">
       <div className="mx-auto max-w-7xl">
         {/* Top Header */}
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-neutral-900 pb-5 mb-6">
@@ -511,13 +514,23 @@ export const CreateInvoice: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            {/* Prominent Handy Preview Button */}
+            <button
+              type="button"
+              onClick={() => setIsPreviewModalOpen(true)}
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-neutral-900 border border-purple-500/40 text-purple-300 hover:bg-purple-950/40 text-xs font-bold transition-all shadow-md hover:scale-[1.02] active:scale-95"
+            >
+              <Eye className="h-4 w-4 text-purple-400" />
+              <span>Preview Invoice</span>
+            </button>
+
             {/* Mobile View Toggle */}
-            <div className="flex lg:hidden bg-neutral-900 p-1 rounded-xl border border-neutral-800 w-full sm:w-auto justify-center">
+            <div className="flex lg:hidden bg-neutral-900 p-1 rounded-xl border border-neutral-800">
               <button
                 type="button"
                 onClick={() => setActiveTab('editor')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'editor' ? 'bg-purple-600 text-white' : 'text-neutral-400'
                 }`}
               >
@@ -527,12 +540,12 @@ export const CreateInvoice: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('preview')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   activeTab === 'preview' ? 'bg-purple-600 text-white' : 'text-neutral-400'
                 }`}
               >
                 <Eye className="h-3.5 w-3.5" />
-                <span>Live Preview</span>
+                <span>Side View</span>
               </button>
             </div>
 
@@ -946,7 +959,7 @@ export const CreateInvoice: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Secondary Row: Discount, GST Rate, Sub-line */}
+                    {/* Secondary Row: Description, Discount, GST Rate */}
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1 border-t border-neutral-900">
                       {/* Item Description */}
                       <div className="sm:col-span-6">
@@ -1140,17 +1153,94 @@ export const CreateInvoice: React.FC = () => {
               activeTab === 'editor' ? 'hidden lg:block' : 'block'
             }`}
           >
-            <InvoicePreview
-              invoice={currentInvoiceSnapshot}
-              onDownloadPdf={handleDownloadPdfOnly}
-              onConvertToFinal={() => {
-                setIsDraft(false);
-                triggerAlert('success', 'Document converted to Official Tax Invoice mode!');
-              }}
-              isSaving={isSaving}
-            />
+            <div className="relative h-full">
+              <button
+                type="button"
+                onClick={() => setIsPreviewModalOpen(true)}
+                className="absolute top-3 right-4 z-20 hidden lg:flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 backdrop-blur-sm transition-all"
+                title="Expand to Fullscreen Preview"
+              >
+                <Maximize2 className="h-3 w-3" />
+                <span>Fullscreen</span>
+              </button>
+              <InvoicePreview
+                invoice={currentInvoiceSnapshot}
+                onDownloadPdf={handleDownloadPdfOnly}
+                onConvertToFinal={() => {
+                  setIsDraft(false);
+                  triggerAlert('success', 'Document converted to Official Tax Invoice mode!');
+                }}
+                isSaving={isSaving}
+              />
+            </div>
           </div>
         </div>
+
+        {/* Sticky Floating Quick Action Bar (Always visible & handy at bottom) */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-neutral-900/95 backdrop-blur-md border border-neutral-800/90 px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-3">
+          <div className="flex items-center gap-2 pr-2 border-r border-neutral-800">
+            <span className="text-[11px] text-neutral-400">Total:</span>
+            <span className="font-mono font-bold text-sm text-purple-300">
+              {formatIndianCurrency(calculatedTotals.grandTotal)}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsPreviewModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 text-xs font-bold transition-all"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            <span>Preview</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSaveAndGenerate}
+            disabled={isSaving}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold hover:from-purple-500 hover:to-indigo-500 shadow-md transition-all disabled:opacity-50"
+          >
+            <Save className="h-3.5 w-3.5" />
+            <span>{isSaving ? 'Saving...' : isDraft ? 'Save Draft' : 'Save Tax PDF'}</span>
+          </button>
+        </div>
+
+        {/* Fullscreen High-Res Invoice Preview Modal */}
+        {isPreviewModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto">
+            <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
+              <div className="flex items-center justify-between p-4 border-b border-neutral-800 bg-neutral-950/80 shrink-0">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-purple-400" />
+                  <h3 className="text-sm font-bold text-neutral-100">
+                    {isDraft ? 'Draft Invoice Preview' : 'Tax Invoice Live Preview'}
+                  </h3>
+                  <span className="text-[10px] bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded font-mono">
+                    {invoiceNumber || 'INV-0001'}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setIsPreviewModalOpen(false)}
+                  className="p-1 text-neutral-400 hover:text-white rounded-lg hover:bg-neutral-800 transition-all"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-neutral-950">
+                <InvoicePreview
+                  invoice={currentInvoiceSnapshot}
+                  onDownloadPdf={handleDownloadPdfOnly}
+                  onConvertToFinal={() => {
+                    setIsDraft(false);
+                    triggerAlert('success', 'Document converted to Official Tax Invoice mode!');
+                  }}
+                  isSaving={isSaving}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
