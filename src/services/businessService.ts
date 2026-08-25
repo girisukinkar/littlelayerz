@@ -141,7 +141,11 @@ export const businessService = {
       updated_at: new Date().toISOString(),
     };
 
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('LocalStorage save profile quota warning:', e);
+    }
 
     if (isSupabaseConfigured) {
       try {

@@ -27,6 +27,37 @@ const SUPABASE_CONFIRMED_KEY = 'd3d_supabase_invoices_confirmed';
 
 
 
+function stripLargeBase64FromInvoice(inv: GstInvoiceRecord): GstInvoiceRecord {
+  if (!inv) return inv;
+  const copy = { ...inv };
+  if (copy.seller_snapshot) {
+    const seller = { ...copy.seller_snapshot };
+    if (seller.logo_url && seller.logo_url.length > 500) {
+      seller.logo_url = '';
+    }
+    if (seller.upi_qr_url && seller.upi_qr_url.length > 500) {
+      seller.upi_qr_url = '';
+    }
+    copy.seller_snapshot = seller;
+  }
+  return copy;
+}
+
+function safeSetLocalStorage(key: string, invoices: GstInvoiceRecord[]) {
+  const cleaned = invoices.map(stripLargeBase64FromInvoice);
+  try {
+    localStorage.setItem(key, JSON.stringify(cleaned));
+  } catch (err: any) {
+    console.warn('LocalStorage quota exceeded in invoice service:', err);
+    try {
+      const trimmed = cleaned.slice(0, 30);
+      localStorage.setItem(key, JSON.stringify(trimmed));
+    } catch (quotaErr) {
+      console.error('Critical localStorage quota error:', quotaErr);
+    }
+  }
+}
+
 function sanitizeInvoiceSellerSnapshot(inv: GstInvoiceRecord): GstInvoiceRecord {
   if (inv && inv.seller_snapshot) {
     if (inv.seller_snapshot.gstin === '27AAPFU0939F1ZV' || inv.seller_snapshot.name === 'Dexter3D Studio') {
@@ -181,7 +212,7 @@ export const gstInvoiceService = {
       updatedList = invoices.map((inv) => (inv.id === newId ? newRecord : inv));
     }
 
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedList));
+    safeSetLocalStorage(LOCAL_STORAGE_KEY, updatedList);
 
     if (isSupabaseConfigured) {
       try {
