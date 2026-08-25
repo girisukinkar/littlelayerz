@@ -509,8 +509,6 @@ export const CreateInvoice: React.FC = () => {
           customerService.getCustomers().then((res) => setCustomers(res)).catch(() => {});
         } catch (custErr: any) {
           console.warn('Could not auto-save customer record:', custErr);
-          triggerAlert('error', `Could not save customer: ${custErr.message || 'Unknown error'}`);
-          return;
         }
       }
 

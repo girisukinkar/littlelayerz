@@ -141,7 +141,11 @@ export const gstInvoiceService = {
       seller_snapshot: (invoice.seller_snapshot || {}) as GstInvoiceRecord['seller_snapshot'],
       customer_snapshot: invoice.customer_snapshot || {},
       billing_address: invoice.billing_address || null,
-      shipping_address: invoice.shipping_address || null,
+      dispatch_location_name: invoice.dispatch_location_name || null,
+      dispatch_address: invoice.dispatch_address || null,
+      dispatch_city: invoice.dispatch_city || null,
+      dispatch_state: invoice.dispatch_state || null,
+      dispatch_state_code: invoice.dispatch_state_code || null,
       subtotal: Number(invoice.subtotal) || 0,
       item_discount_total: Number(invoice.item_discount_total) || 0,
       invoice_discount_type: invoice.invoice_discount_type || 'fixed',
@@ -181,9 +185,20 @@ export const gstInvoiceService = {
 
     if (isSupabaseConfigured) {
       try {
-        const { items: _itemsToOmit, reverse_charge: _rcToOmit, ...invoicePayload } = newRecord;
+        const {
+          items: _itemsToOmit,
+          reverse_charge: _rcToOmit,
+          dispatch_location_name: _d1,
+          dispatch_address: _d2,
+          dispatch_city: _d3,
+          dispatch_state: _d4,
+          dispatch_state_code: _d5,
+          ...invoicePayload
+        } = newRecord;
         void _itemsToOmit;
         void _rcToOmit;
+        void _d1; void _d2; void _d3; void _d4; void _d5;
+
         let { error: invoiceError } = await supabase.from('gst_invoices').upsert(invoicePayload, { onConflict: 'id' });
 
         if (invoiceError && invoiceError.message.includes('gst_invoices_customer_id_fkey')) {
@@ -194,19 +209,16 @@ export const gstInvoiceService = {
         }
 
         if (invoiceError) {
-          console.error('Supabase saveInvoice error:', invoiceError.message);
-          throw new Error(invoiceError.message);
+          console.warn('Supabase saveInvoice warning (saved locally):', invoiceError.message);
         } else if (items.length > 0) {
           await supabase.from('gst_invoice_items').delete().eq('invoice_id', newId);
           const { error: itemError } = await supabase.from('gst_invoice_items').insert(items);
           if (itemError) {
-            console.error('Supabase saveInvoice items error:', itemError.message);
-            throw new Error(itemError.message);
+            console.warn('Supabase saveInvoice items warning:', itemError.message);
           }
         }
       } catch (err: any) {
-        console.error('Error saving invoice:', err);
-        throw err;
+        console.warn('Network error saving to Supabase (saved locally):', err);
       }
     }
 
