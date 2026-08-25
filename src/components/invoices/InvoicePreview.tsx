@@ -178,6 +178,20 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                     Phone: {seller.phone || '-'} | Email: {seller.email || '-'}
                   </p>
                 )}
+
+                {/* Dispatched From Origin Info */}
+                <div className="mt-2 pt-1.5 border-t border-slate-200 text-[10px]">
+                  <span className="font-bold text-slate-700 uppercase tracking-wider block text-[9px]">
+                    Dispatched From (Ship From Origin):
+                  </span>
+                  <p className="text-slate-600 font-medium">
+                    {invoice.dispatch_location_name || 'Ghaziabad Unit'}
+                    {invoice.dispatch_address ? ` (${invoice.dispatch_address})` : ''} -{' '}
+                    <span className="font-semibold text-purple-700 font-mono">
+                      {formatStateWithCode(invoice.dispatch_state || 'Uttar Pradesh', invoice.dispatch_state_code || '09')}
+                    </span>
+                  </p>
+                </div>
               </div>
 
               {/* Buyer / Bill To */}

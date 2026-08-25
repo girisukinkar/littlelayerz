@@ -20,6 +20,10 @@ import {
   AtSign,
   MessageCircle,
   Globe,
+  Truck,
+  MapPin,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
@@ -61,6 +65,59 @@ export const Settings: React.FC = () => {
   const [deliveryCost, setDeliveryCost] = useState(settingsStore.defaultDeliveryCost.toString());
   const [electricityRate, setElectricityRate] = useState(settingsStore.electricityRate.toString());
   const [printerPower, setPrinterPower] = useState(settingsStore.printerPower.toString());
+
+  // Warehouse Form State
+  const [showAddWarehouse, setShowAddWarehouse] = useState(false);
+  const [newWhName, setNewWhName] = useState('');
+  const [newWhAddress, setNewWhAddress] = useState('');
+  const [newWhCity, setNewWhCity] = useState('');
+  const [newWhState, setNewWhState] = useState('Uttar Pradesh');
+  const [newWhStateCode, setNewWhStateCode] = useState('09');
+  const [newWhIsDefault, setNewWhIsDefault] = useState(false);
+
+  const handleAddWarehouse = () => {
+    if (!newWhName.trim()) {
+      triggerAlert('error', 'Warehouse Name is required');
+      return;
+    }
+    const newWh = {
+      id: `wh-${Date.now()}`,
+      name: newWhName.trim(),
+      address: newWhAddress.trim(),
+      city: newWhCity.trim(),
+      state: newWhState,
+      state_code: newWhStateCode,
+      is_default: newWhIsDefault,
+    };
+
+    let updatedList = [...(profile.dispatch_warehouses || [])];
+    if (newWhIsDefault) {
+      updatedList = updatedList.map((w) => ({ ...w, is_default: false }));
+    }
+    updatedList.push(newWh);
+
+    setProfile({ ...profile, dispatch_warehouses: updatedList });
+    setNewWhName('');
+    setNewWhAddress('');
+    setNewWhCity('');
+    setShowAddWarehouse(false);
+    triggerAlert('success', `Warehouse "${newWh.name}" added to business profile!`);
+  };
+
+  const handleDeleteWarehouse = (id: string) => {
+    const updatedList = (profile.dispatch_warehouses || []).filter((w) => w.id !== id);
+    setProfile({ ...profile, dispatch_warehouses: updatedList });
+    triggerAlert('success', 'Warehouse removed!');
+  };
+
+  const handleSetDefaultWarehouse = (id: string) => {
+    const updatedList = (profile.dispatch_warehouses || []).map((w) => ({
+      ...w,
+      is_default: w.id === id,
+    }));
+    setProfile({ ...profile, dispatch_warehouses: updatedList });
+    triggerAlert('success', 'Default warehouse updated!');
+  };
 
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingQr, setIsUploadingQr] = useState(false);
@@ -620,6 +677,170 @@ export const Settings: React.FC = () => {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Section 5: Warehouses & Dispatch Origins */}
+            <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6 shadow-xl space-y-5">
+              <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                  <Truck className="h-4 w-4" />
+                  5. Warehouses & Dispatch Locations (Multi-Location GST Origin)
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowAddWarehouse(!showAddWarehouse)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 text-xs font-bold transition-all"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Warehouse</span>
+                </button>
+              </div>
+
+              {/* Warehouses List */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(profile.dispatch_warehouses || []).map((wh) => (
+                  <div
+                    key={wh.id}
+                    className={`p-3.5 rounded-xl border text-xs relative flex flex-col justify-between transition-all ${
+                      wh.is_default
+                        ? 'border-purple-500/60 bg-purple-500/10'
+                        : 'border-neutral-800 bg-neutral-950'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 font-bold text-neutral-100">
+                          <MapPin className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+                          <span>{wh.name}</span>
+                        </div>
+                        {wh.is_default ? (
+                          <span className="text-[9px] bg-purple-500/30 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded font-bold uppercase">
+                            Default Origin
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSetDefaultWarehouse(wh.id)}
+                            className="text-[10px] text-neutral-400 hover:text-purple-300 hover:underline"
+                          >
+                            Set Default
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-neutral-400 leading-tight">
+                        {wh.address ? `${wh.address}, ` : ''}
+                        {wh.city ? `${wh.city}, ` : ''}
+                        {wh.state} ({wh.state_code})
+                      </p>
+                    </div>
+
+                    <div className="mt-3 pt-2 border-t border-neutral-800/80 flex items-center justify-between text-[10px]">
+                      <span className="font-mono text-purple-400 font-semibold">State Code: {wh.state_code}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteWarehouse(wh.id)}
+                        className="text-red-400 hover:text-red-300 flex items-center gap-1 font-semibold"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add New Warehouse Form Card */}
+              {showAddWarehouse && (
+                <div className="bg-neutral-950 p-4 rounded-xl border border-purple-500/40 space-y-3 mt-4">
+                  <h4 className="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Plus className="h-3.5 w-3.5" /> Add New Warehouse / Manufacturing Origin
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-neutral-400 mb-1">Warehouse Name *</label>
+                      <input
+                        type="text"
+                        value={newWhName}
+                        onChange={(e) => setNewWhName(e.target.value)}
+                        placeholder="e.g. Thane Factory Unit"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-purple-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-neutral-400 mb-1">City / Region *</label>
+                      <input
+                        type="text"
+                        value={newWhCity}
+                        onChange={(e) => setNewWhCity(e.target.value)}
+                        placeholder="e.g. Thane"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-purple-500"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-semibold text-neutral-400 mb-1">Address / Industrial Area</label>
+                      <input
+                        type="text"
+                        value={newWhAddress}
+                        onChange={(e) => setNewWhAddress(e.target.value)}
+                        placeholder="e.g. Plot 12, Wagle Industrial Estate, Thane West"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-purple-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-neutral-400 mb-1">State & State Code *</label>
+                      <select
+                        value={newWhStateCode}
+                        onChange={(e) => {
+                          const found = INDIAN_STATES.find((s) => s.code === e.target.value);
+                          if (found) {
+                            setNewWhStateCode(found.code);
+                            setNewWhState(found.name);
+                          }
+                        }}
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-purple-500"
+                      >
+                        {INDIAN_STATES.map((s) => (
+                          <option key={s.code} value={s.code}>
+                            {s.name} ({s.code})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-5">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-300 font-semibold">
+                        <input
+                          type="checkbox"
+                          checked={newWhIsDefault}
+                          onChange={(e) => setNewWhIsDefault(e.target.checked)}
+                          className="rounded border-neutral-700 bg-neutral-900 text-purple-600 focus:ring-0"
+                        />
+                        <span>Set as Default Dispatch Origin</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddWarehouse(false)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-400 hover:text-neutral-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddWarehouse}
+                      className="px-4 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-500 transition-all"
+                    >
+                      Save Warehouse
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-2">

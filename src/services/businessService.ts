@@ -33,6 +33,26 @@ const DEFAULT_BUSINESS_PROFILE: BusinessProfile = {
   default_gst_rate: 18.0,
   default_notes: 'Thank you for choosing LittleLayerz We appreciate your business.',
   default_terms: '1. Goods once sold will not be returned unless damaged upon receipt.',
+  dispatch_warehouses: [
+    {
+      id: 'wh-ghaziabad',
+      name: 'Ghaziabad Main Unit',
+      address: 'Sector 5, Indirapuram',
+      city: 'Ghaziabad',
+      state: 'Uttar Pradesh',
+      state_code: '09',
+      is_default: true,
+    },
+    {
+      id: 'wh-thane',
+      name: 'Thane Manufacturing Unit',
+      address: 'Kashish Park, LBS Marg, Thane West - 400604',
+      city: 'Thane',
+      state: 'Maharashtra',
+      state_code: '27',
+      is_default: false,
+    },
+  ],
 };
 
 export const businessService = {
@@ -82,7 +102,19 @@ export const businessService = {
           parsed.bank_name = DEFAULT_BUSINESS_PROFILE.bank_name;
           parsed.bank_account_no = DEFAULT_BUSINESS_PROFILE.bank_account_no;
           parsed.bank_ifsc = DEFAULT_BUSINESS_PROFILE.bank_ifsc;
+        }
+
+        if (!parsed.dispatch_warehouses || parsed.dispatch_warehouses.length === 0) {
+          parsed.dispatch_warehouses = DEFAULT_BUSINESS_PROFILE.dispatch_warehouses;
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
+        } else {
+          // ensure Thane address is up to date
+          const thaneWh = parsed.dispatch_warehouses.find((w) => w.id === 'wh-thane' || w.state_code === '27');
+          if (thaneWh && (!thaneWh.address || thaneWh.address.includes('Wagle'))) {
+            thaneWh.name = 'Thane Manufacturing Unit';
+            thaneWh.address = 'Kashish Park, LBS Marg, Thane West - 400604';
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
+          }
         }
         if (!isValidUuid(parsed.id)) {
           parsed.id = DEFAULT_BUSINESS_PROFILE.id;

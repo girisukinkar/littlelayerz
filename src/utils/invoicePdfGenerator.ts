@@ -175,6 +175,18 @@ export async function generateInvoicePDF(
     sellerLineY += splitContact.length * 3.6;
   }
 
+  // Dispatched From Origin text
+  const dispatchName = invoice.dispatch_location_name || 'Ghaziabad Unit';
+  const dispatchStateStr = formatStateWithCode(invoice.dispatch_state || 'Uttar Pradesh', invoice.dispatch_state_code || '09');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(109, 40, 217); // Purple accent
+  doc.text(`Dispatched From: ${dispatchName} (${dispatchStateStr})`, textLeftX, sellerLineY);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  sellerLineY += 3.8;
+
   // Invoice Metadata Box (Right)
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);

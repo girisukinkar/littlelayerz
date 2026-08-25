@@ -33,6 +33,8 @@ import {
   Sparkles,
   X,
   Maximize2,
+  MapPin,
+  Truck,
 } from 'lucide-react';
 
 export const CreateInvoice: React.FC = () => {
@@ -70,7 +72,12 @@ export const CreateInvoice: React.FC = () => {
   const [placeOfSupplyCode, setPlaceOfSupplyCode] = useState('09'); // Uttar Pradesh default
   const [placeOfSupplyName, setPlaceOfSupplyName] = useState('Uttar Pradesh');
 
-  // Invoice Meta
+  // Dispatch Origin State (Default: Ghaziabad, Uttar Pradesh [09])
+  const [dispatchLocationName, setDispatchLocationName] = useState('Ghaziabad Unit');
+  const [dispatchAddress, setDispatchAddress] = useState('Sector 5, Indirapuram');
+  const [dispatchCity, setDispatchCity] = useState('Ghaziabad');
+  const [dispatchState, setDispatchState] = useState('Uttar Pradesh');
+  const [dispatchStateCode, setDispatchStateCode] = useState('09');
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState('');
@@ -149,6 +156,12 @@ export const CreateInvoice: React.FC = () => {
             setShippingAddress(existing.shipping_address || existing.customer_snapshot?.shipping_address || '');
             setPlaceOfSupplyCode(existing.place_of_supply_state_code);
             setPlaceOfSupplyName(existing.place_of_supply);
+
+            if (existing.dispatch_location_name) setDispatchLocationName(existing.dispatch_location_name);
+            if (existing.dispatch_address) setDispatchAddress(existing.dispatch_address);
+            if (existing.dispatch_city) setDispatchCity(existing.dispatch_city);
+            if (existing.dispatch_state) setDispatchState(existing.dispatch_state);
+            if (existing.dispatch_state_code) setDispatchStateCode(existing.dispatch_state_code);
 
             setInvoiceDiscountType(existing.invoice_discount_type);
             setInvoiceDiscountValue(existing.invoice_discount_value);
@@ -307,9 +320,9 @@ export const CreateInvoice: React.FC = () => {
 
   // Perform Calculations
   const calculatedTotals = useMemo(() => {
-    const sellerCode = businessProfile?.state_code || '27';
+    const originCode = dispatchStateCode || businessProfile?.state_code || '09';
     return calculateInvoice({
-      sellerStateCode: sellerCode,
+      sellerStateCode: originCode,
       customerStateCode: placeOfSupplyCode,
       items,
       invoiceDiscountType,
@@ -320,6 +333,7 @@ export const CreateInvoice: React.FC = () => {
       applyRounding: false,
     });
   }, [
+    dispatchStateCode,
     businessProfile,
     placeOfSupplyCode,
     items,
@@ -375,6 +389,11 @@ export const CreateInvoice: React.FC = () => {
       },
       billing_address: billingAddress || null,
       shipping_address: sameAsBilling ? billingAddress || null : shippingAddress || null,
+      dispatch_location_name: dispatchLocationName || 'Ghaziabad Unit',
+      dispatch_address: dispatchAddress || 'Sector 5, Indirapuram',
+      dispatch_city: dispatchCity || 'Ghaziabad',
+      dispatch_state: dispatchState || 'Uttar Pradesh',
+      dispatch_state_code: dispatchStateCode || '09',
       subtotal: calculatedTotals.subtotal,
       item_discount_total: calculatedTotals.itemDiscountTotal,
       invoice_discount_type: calculatedTotals.invoiceDiscountType,
@@ -741,6 +760,75 @@ export const CreateInvoice: React.FC = () => {
                     onChange={(e) => setDueDate(e.target.value)}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 font-mono focus:border-purple-500 focus:outline-none"
                   />
+                </div>
+              </div>
+
+              {/* Dispatch Origin / Warehouse Selection */}
+              <div className="pt-3 border-t border-neutral-800">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[11px] font-semibold uppercase text-neutral-300 flex items-center gap-1.5">
+                    <Truck className="h-3.5 w-3.5 text-purple-400" />
+                    <span>Dispatch Origin (Dispatched From)</span>
+                  </label>
+                  <span className="text-[10px] text-neutral-400">Default: Ghaziabad</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {(businessProfile?.dispatch_warehouses && businessProfile.dispatch_warehouses.length > 0
+                    ? businessProfile.dispatch_warehouses
+                    : [
+                        {
+                          id: 'wh-ghaziabad',
+                          name: 'Ghaziabad Unit',
+                          address: 'Sector 5, Indirapuram',
+                          city: 'Ghaziabad',
+                          state: 'Uttar Pradesh',
+                          state_code: '09',
+                          is_default: true,
+                        },
+                        {
+                          id: 'wh-thane',
+                          name: 'Thane Manufacturing Unit',
+                          address: 'Kashish Park, LBS Marg, Thane West - 400604',
+                          city: 'Thane',
+                          state: 'Maharashtra',
+                          state_code: '27',
+                          is_default: false,
+                        },
+                      ]
+                  ).map((wh) => {
+                    const isSelected = dispatchStateCode === wh.state_code && dispatchLocationName === wh.name;
+                    return (
+                      <button
+                        key={wh.id}
+                        type="button"
+                        onClick={() => {
+                          setDispatchLocationName(wh.name);
+                          setDispatchAddress(wh.address || '');
+                          setDispatchCity(wh.city || '');
+                          setDispatchState(wh.state);
+                          setDispatchStateCode(wh.state_code);
+                        }}
+                        className={`flex items-start gap-2.5 p-2.5 rounded-xl border text-left transition-all ${
+                          isSelected
+                            ? 'border-purple-500/80 bg-purple-500/10 text-purple-200 shadow-sm'
+                            : 'border-neutral-800 bg-neutral-950 text-neutral-400 hover:border-neutral-700'
+                        }`}
+                      >
+                        <MapPin className={`h-4 w-4 shrink-0 mt-0.5 ${isSelected ? 'text-purple-400' : 'text-neutral-500'}`} />
+                        <div>
+                          <div className="text-xs font-bold text-neutral-100 flex items-center gap-1.5">
+                            <span>{wh.city || wh.state}</span>
+                            <span className="text-[9px] bg-purple-500/20 text-purple-300 px-1.5 py-0.2 rounded font-mono">
+                              {wh.state_code}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-neutral-400 leading-tight mt-0.5">
+                            {wh.name} {wh.address ? `- ${wh.address}` : ''}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

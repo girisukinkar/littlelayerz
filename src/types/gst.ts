@@ -1,5 +1,15 @@
 import type { DiscountType, PaymentStatus, PaymentMethod } from '../utils/gstCalculations';
 
+export interface DispatchWarehouse {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  state_code: string;
+  is_default?: boolean;
+}
+
 export interface BusinessProfile {
   id: string;
   user_id?: string | null;
@@ -28,6 +38,7 @@ export interface BusinessProfile {
   default_gst_rate: number;
   default_notes?: string | null;
   default_terms?: string | null;
+  dispatch_warehouses?: DispatchWarehouse[];
   created_at?: string;
   updated_at?: string;
 }
@@ -112,11 +123,16 @@ export interface GstInvoiceRecord {
   place_of_supply_state_code: string;
   is_inter_state: boolean;
   
-  // Historical Snapshots
+  // Historical Snapshots & Origin
   seller_snapshot: BusinessProfile;
   customer_snapshot: Partial<GstCustomer>;
   billing_address?: string | null;
   shipping_address?: string | null;
+  dispatch_location_name?: string | null;
+  dispatch_address?: string | null;
+  dispatch_city?: string | null;
+  dispatch_state?: string | null;
+  dispatch_state_code?: string | null;
   
   // Computations
   subtotal: number;
