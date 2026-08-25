@@ -4,6 +4,7 @@ import { businessService } from '../services/businessService';
 import { storageService } from '../services/storageService';
 import type { BusinessProfile } from '../types/gst';
 import { INDIAN_STATES, getStateCodeFromGstin, validateGstin } from '../utils/indianStates';
+import { ClearCacheModal } from '../components/common/ClearCacheModal';
 import {
   Save,
   CheckCircle2,
@@ -24,10 +25,12 @@ import {
   MapPin,
   Plus,
   Trash2,
+  RotateCcw,
 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
   const settingsStore = useSettingsStore();
+  const [isCacheModalOpen, setIsCacheModalOpen] = useState(false);
 
   // Tabs: 'business' | 'production'
   const [activeTab, setActiveTab] = useState<'business' | 'production'>('business');
@@ -843,6 +846,37 @@ export const Settings: React.FC = () => {
               )}
             </div>
 
+            {/* Section 6: System Data & Cache Management */}
+            <div className="rounded-2xl border border-amber-900/30 bg-amber-950/10 p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-amber-900/30 pb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                  <RotateCcw className="h-4 w-4" />
+                  6. System Data & Cache Management
+                </h3>
+                <span className="text-[10px] text-amber-400/80 font-mono bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  Universal Reset
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-neutral-200">Clear Local Storage & Application Cache</p>
+                  <p className="text-[11px] text-neutral-400">
+                    If you experience data sync delays, browser quota errors, or stale interface states, perform a complete universal cache flush here.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsCacheModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all hover:scale-105 active:scale-95 shrink-0 cursor-pointer"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Clear Cache & Reset Storage</span>
+                </button>
+              </div>
+            </div>
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="submit"
@@ -931,6 +965,11 @@ export const Settings: React.FC = () => {
           </form>
         )}
       </div>
+
+      <ClearCacheModal
+        isOpen={isCacheModalOpen}
+        onClose={() => setIsCacheModalOpen(false)}
+      />
     </div>
   );
 };

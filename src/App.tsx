@@ -16,6 +16,8 @@ import { FilamentInventory } from './pages/FilamentInventory';
 import { MeeshoCategories } from './pages/MeeshoCategories';
 import { ProfitCalculator } from './pages/ProfitCalculator';
 import { Sales } from './pages/Sales';
+import { useState } from 'react';
+import { ClearCacheModal } from './components/common/ClearCacheModal';
 import {
   LayoutDashboard,
   FilePlus,
@@ -27,6 +29,7 @@ import {
   Grid,
   Receipt,
   Sparkles,
+  RotateCcw,
 } from 'lucide-react';
 
 const queryClient = new QueryClient({
@@ -39,6 +42,8 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
+  const [isClearCacheModalOpen, setIsClearCacheModalOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col print:bg-white print:text-black">
       {/* Navigation Navbar */}
@@ -170,6 +175,16 @@ function AppContent() {
               Settings
             </NavLink>
 
+            <button
+              type="button"
+              onClick={() => setIsClearCacheModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-neutral-800 bg-neutral-900/60 text-neutral-400 hover:text-amber-300 hover:border-amber-500/40 hover:bg-amber-500/10 transition-all cursor-pointer"
+              title="Clear local storage & application cache"
+            >
+              <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
+              <span>Clear Cache</span>
+            </button>
+
             {/* Separator */}
             <span className="h-4 w-px bg-neutral-800 mx-1 hidden lg:inline-block" />
 
@@ -254,6 +269,11 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
+
+      <ClearCacheModal
+        isOpen={isClearCacheModalOpen}
+        onClose={() => setIsClearCacheModalOpen(false)}
+      />
     </div>
   );
 }
