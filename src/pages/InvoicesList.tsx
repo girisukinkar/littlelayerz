@@ -392,51 +392,41 @@ export const InvoicesList: React.FC = () => {
                           {inv.is_draft && (
                             <button
                               onClick={(e) => handleConvertToFinal(inv, e)}
-                              className="group relative p-1.5 text-emerald-400 hover:bg-emerald-950/40 rounded-lg transition-all"
+                              className="p-1.5 text-emerald-400 hover:bg-emerald-950/40 rounded-lg transition-all"
+                              title="Make Official Tax Invoice"
                             >
                               <CheckCircle className="h-3.5 w-3.5" />
-                              <span className="absolute bottom-full right-0 mb-1.5 hidden group-hover:block px-2 py-1 bg-neutral-800 text-[10px] font-medium text-neutral-300 rounded whitespace-nowrap border border-neutral-700 shadow-xl z-50">
-                                Make Official Tax Invoice
-                              </span>
                             </button>
                           )}
                           {!inv.is_draft && inv.balance_due > 0 && (
                             <button
                               onClick={(e) => openPaymentModal(inv, e)}
-                              className="group relative p-1.5 text-emerald-400 hover:bg-emerald-950/40 rounded-lg transition-all"
+                              className="p-1.5 text-emerald-400 hover:bg-emerald-950/40 rounded-lg transition-all"
+                              title="Record Payment"
                             >
                               <CreditCard className="h-3.5 w-3.5" />
-                              <span className="absolute bottom-full right-0 mb-1.5 hidden group-hover:block px-2 py-1 bg-neutral-800 text-[10px] font-medium text-neutral-300 rounded whitespace-nowrap border border-neutral-700 shadow-xl z-50">
-                                Record Payment
-                              </span>
                             </button>
                           )}
                           <button
                             onClick={(e) => handleDownloadPdf(inv, e)}
-                            className="group relative p-1.5 text-neutral-400 hover:text-purple-300 hover:bg-neutral-800 rounded-lg transition-all"
+                            className="p-1.5 text-neutral-400 hover:text-purple-300 hover:bg-neutral-800 rounded-lg transition-all"
+                            title="Download PDF"
                           >
                             <Download className="h-3.5 w-3.5" />
-                            <span className="absolute bottom-full right-0 mb-1.5 hidden group-hover:block px-2 py-1 bg-neutral-800 text-[10px] font-medium text-neutral-300 rounded whitespace-nowrap border border-neutral-700 shadow-xl z-50">
-                              Download PDF
-                            </span>
                           </button>
                           <button
                             onClick={(e) => handleDuplicate(inv, e)}
-                            className="group relative p-1.5 text-neutral-400 hover:text-purple-300 hover:bg-neutral-800 rounded-lg transition-all"
+                            className="p-1.5 text-neutral-400 hover:text-purple-300 hover:bg-neutral-800 rounded-lg transition-all"
+                            title="Duplicate"
                           >
                             <Copy className="h-3.5 w-3.5" />
-                            <span className="absolute bottom-full right-0 mb-1.5 hidden group-hover:block px-2 py-1 bg-neutral-800 text-[10px] font-medium text-neutral-300 rounded whitespace-nowrap border border-neutral-700 shadow-xl z-50">
-                              Duplicate
-                            </span>
                           </button>
                           <button
                             onClick={(e) => handleDelete(inv.id, inv.invoice_number, e)}
-                            className="group relative p-1.5 text-neutral-400 hover:text-red-400 hover:bg-neutral-800 rounded-lg transition-all"
+                            className="p-1.5 text-neutral-400 hover:text-red-400 hover:bg-neutral-800 rounded-lg transition-all"
+                            title="Delete"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                            <span className="absolute bottom-full right-0 mb-1.5 hidden group-hover:block px-2 py-1 bg-neutral-800 text-[10px] font-medium text-neutral-300 rounded whitespace-nowrap border border-neutral-700 shadow-xl z-50">
-                              Delete
-                            </span>
                           </button>
                         </div>
                       </td>
