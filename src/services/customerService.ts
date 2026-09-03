@@ -64,22 +64,10 @@ export const customerService = {
   async saveCustomer(customer: Partial<GstCustomer>): Promise<GstCustomer> {
     const customers = await this.getCustomers();
     
-    // Check if customer already exists by ID, Phone, or Name
+    // Check if customer already exists by ID ONLY
     let existing: GstCustomer | undefined;
     if (customer.id && isValidUuid(customer.id)) {
       existing = customers.find((c) => c.id === customer.id);
-    }
-    if (!existing && customer.phone && customer.phone.trim()) {
-      const cleanPhone = customer.phone.replace(/[^0-9]/g, '');
-      if (cleanPhone.length >= 10) {
-        existing = customers.find((c) => {
-          const cPhone = (c.phone || '').replace(/[^0-9]/g, '');
-          return cPhone.length >= 10 && cPhone.slice(-10) === cleanPhone.slice(-10);
-        });
-      }
-    }
-    if (!existing && customer.name && customer.name.trim() && customer.name.trim().toLowerCase() !== 'cash customer') {
-      existing = customers.find((c) => c.name.trim().toLowerCase() === customer.name!.trim().toLowerCase());
     }
 
     const isNew = !existing && (!customer.id || !isValidUuid(customer.id));

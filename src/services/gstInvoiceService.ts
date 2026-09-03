@@ -1,8 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { GstInvoiceRecord, GstInvoiceItemRecord } from '../types/gst';
 
-const LOCAL_STORAGE_KEY = 'd3d_gst_invoices';
-
 function isValidUuid(id?: string | null): boolean {
   if (!id) return false;
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
@@ -17,45 +15,6 @@ function generateUuid(): string {
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
-}
-
-// No hardcoded sample invoices — real data comes from Supabase or localStorage only.
-// This prevents fake demo records from polluting the live ledger.
-
-// Sentinel key to track if Supabase has been confirmed reachable
-const SUPABASE_CONFIRMED_KEY = 'd3d_supabase_invoices_confirmed';
-
-
-
-function stripLargeBase64FromInvoice(inv: GstInvoiceRecord): GstInvoiceRecord {
-  if (!inv) return inv;
-  const copy = { ...inv };
-  if (copy.seller_snapshot) {
-    const seller = { ...copy.seller_snapshot };
-    if (seller.logo_url && seller.logo_url.length > 500) {
-      seller.logo_url = '';
-    }
-    if (seller.upi_qr_url && seller.upi_qr_url.length > 500) {
-      seller.upi_qr_url = '';
-    }
-    copy.seller_snapshot = seller;
-  }
-  return copy;
-}
-
-function safeSetLocalStorage(key: string, invoices: GstInvoiceRecord[]) {
-  const cleaned = invoices.map(stripLargeBase64FromInvoice);
-  try {
-    localStorage.setItem(key, JSON.stringify(cleaned));
-  } catch (err: any) {
-    console.warn('LocalStorage quota exceeded in invoice service:', err);
-    try {
-      const trimmed = cleaned.slice(0, 30);
-      localStorage.setItem(key, JSON.stringify(trimmed));
-    } catch (quotaErr) {
-      console.error('Critical localStorage quota error:', quotaErr);
-    }
-  }
 }
 
 function sanitizeInvoiceSellerSnapshot(inv: GstInvoiceRecord): GstInvoiceRecord {
@@ -89,36 +48,18 @@ export const gstInvoiceService = {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.warn('Supabase getInvoices error:', error.message);
-          // Fall through to localStorage on error only
-        } else {
-          const sanitized = (data || []).map((inv) => sanitizeInvoiceSellerSnapshot(inv as GstInvoiceRecord));
-          // Supabase responded successfully (even empty array is authoritative)
-          // Mark that Supabase is confirmed reachable
-          localStorage.setItem(SUPABASE_CONFIRMED_KEY, 'true');
-          // Sync to localStorage cache
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sanitized));
-          return sanitized;
+          console.error('Supabase getInvoices error:', error.message);
+          return [];
         }
+        
+        return (data || []).map((inv) => sanitizeInvoiceSellerSnapshot(inv as GstInvoiceRecord));
       } catch (err) {
-        console.warn('Network error fetching invoices:', err);
+        console.error('Network error fetching invoices:', err);
       }
+    } else {
+      console.warn('Supabase is not configured. Cannot fetch invoices.');
     }
 
-    // Only use localStorage cache — never seed fake demo data
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed.map((inv) => sanitizeInvoiceSellerSnapshot(inv as GstInvoiceRecord));
-        }
-      } catch {
-        // ignore parse error
-      }
-    }
-
-    // Return empty list — user has no invoices yet
     return [];
   },
 
@@ -145,8 +86,6 @@ export const gstInvoiceService = {
   },
 
   async saveInvoice(invoice: Partial<GstInvoiceRecord>): Promise<GstInvoiceRecord> {
-    const invoices = await this.getInvoices();
-    const isNew = !invoice.id || !isValidUuid(invoice.id);
     const newId = invoice.id && isValidUuid(invoice.id) ? invoice.id : generateUuid();
     const validCustomerId = invoice.customer_id && isValidUuid(invoice.customer_id) ? invoice.customer_id : null;
 
@@ -205,15 +144,6 @@ export const gstInvoiceService = {
       updated_at: new Date().toISOString(),
     };
 
-    let updatedList: GstInvoiceRecord[];
-    if (isNew) {
-      updatedList = [newRecord, ...invoices.filter((inv) => inv.id !== newId)];
-    } else {
-      updatedList = invoices.map((inv) => (inv.id === newId ? newRecord : inv));
-    }
-
-    safeSetLocalStorage(LOCAL_STORAGE_KEY, updatedList);
-
     if (isSupabaseConfigured) {
       try {
         const {
@@ -249,8 +179,10 @@ export const gstInvoiceService = {
           }
         }
       } catch (err: any) {
-        console.warn('Network error saving to Supabase (saved locally):', err);
+        console.error('Network error saving to Supabase:', err);
       }
+    } else {
+      console.warn('Supabase is not configured. Invoice not saved.');
     }
 
     return newRecord;
@@ -281,25 +213,17 @@ export const gstInvoiceService = {
   },
 
   async deleteInvoice(id: string): Promise<void> {
-    // Delete from Supabase first (source of truth)
     if (isSupabaseConfigured && isValidUuid(id)) {
       try {
-        await supabase.from('gst_invoices').delete().eq('id', id);
+        const { error } = await supabase.from('gst_invoices').delete().eq('id', id);
+        if (error) {
+          console.error('Error deleting invoice from Supabase:', error.message);
+        }
       } catch (err) {
-        console.warn('Error deleting invoice from Supabase:', err);
+        console.error('Network error deleting invoice from Supabase:', err);
       }
-    }
-
-    // Then sync localStorage cache
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as GstInvoiceRecord[];
-        const filtered = parsed.filter((inv) => inv.id !== id);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
-      } catch {
-        // ignore
-      }
+    } else {
+      console.warn('Supabase is not configured. Invoice not deleted.');
     }
   },
 };
